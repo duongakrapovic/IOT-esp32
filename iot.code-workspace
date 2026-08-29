@@ -1,0 +1,35 @@
+{
+	"folders": [
+		{
+			"path": "backend"
+		},
+		{
+			"path": "frontend"
+		},
+		{
+			"path": "hardware"
+		},
+		{
+			"path": "database"
+		}
+	],
+	"settings": {
+		"sqltools.connections": [
+			{
+				"mysqlOptions": {
+					"authProtocol": "default",
+					"enableSsl": "Disabled"
+				},
+				"ssh": "Disabled",
+				"previewLimit": 50,
+				"server": "localhost",
+				"port": 3306,
+				"driver": "MySQL",
+				"name": "iot_project",
+				"database": "iot_project",
+				"username": "root"
+			}
+		],
+		"liveServer.settings.multiRootWorkspaceName": "frontend"
+	}
+}

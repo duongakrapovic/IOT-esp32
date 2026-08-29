@@ -1,0 +1,192 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Page-1" id="ttJ-ss_PYRowACrgXzpP">
+    <mxGraphModel dx="3820" dy="2762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <UserObject label="" mermaidData="{&#xa;  &quot;data&quot;: &quot;flowchart LR\n\n    %% =========================\n    %% HARDWARE\n    %% =========================\n\n    subgraph HW[\&quot;THIẾT BỊ / HARDWARE\&quot;]\n\n        DHT[\&quot;DHT11&lt;br/&gt;Nhiệt độ + Độ ẩm\&quot;]\n\n        LIGHT[\&quot;Cảm biến ánh sáng&lt;br/&gt;Cường độ ánh sáng\&quot;]\n\n        ESP[\&quot;ESP32&lt;br/&gt;Bộ điều khiển trung tâm\&quot;]\n\n        LED[\&quot;3 × LED&lt;br/&gt;Thiết bị thực thi\&quot;]\n\n        DHT --&gt;|Đọc dữ liệu| ESP\n        LIGHT --&gt;|Đọc dữ liệu| ESP\n        ESP --&gt;|Điều khiển GPIO| LED\n\n    end\n\n\n    %% =========================\n    %% NETWORK\n    %% =========================\n\n    subgraph NET[\&quot;TẦNG MẠNG\&quot;]\n\n        MQTT[\&quot;MQTT Broker&lt;br/&gt;Eclipse Mosquitto&lt;br/&gt;Local :1883\&quot;]\n\n        TOPICS[\&quot;MQTT Topics&lt;br/&gt;&lt;br/&gt;iot/sensors/data&lt;br/&gt;iot/devices/command&lt;br/&gt;iot/devices/status\&quot;]\n\n        MQTT --- TOPICS\n\n    end\n\n\n    %% =========================\n    %% APPLICATION\n    %% =========================\n\n    subgraph APP[\&quot;TẦNG ỨNG DỤNG\&quot;]\n\n        BACKEND[\&quot;Backend&lt;br/&gt;Node.js + Express&lt;br/&gt;mqtt + socket.io\&quot;]\n\n        DB[(\&quot;MySQL Database&lt;br/&gt;&lt;br/&gt;Sensor&lt;br/&gt;Data Sensor&lt;br/&gt;Devices&lt;br/&gt;Active_history&lt;br/&gt;Profile\&quot;)]\n\n        WEB[\&quot;Frontend Web&lt;br/&gt;HTML + CSS + JavaScript&lt;br/&gt;Chart.js\&quot;]\n\n        PAGES[\&quot;Các chức năng Web&lt;br/&gt;&lt;br/&gt;Dashboard&lt;br/&gt;Data Sensor&lt;br/&gt;Active History&lt;br/&gt;Profile\&quot;]\n\n        SOCKET[\&quot;Socket.IO&lt;br/&gt;Truyền / cập nhật dữ liệu giữa Backend và Web&lt;br/&gt;&lt;br/&gt;Yêu cầu cập nhật dữ liệu: 2 giây/lần\&quot;]\n\n        WEB --- PAGES\n        BACKEND --- SOCKET\n\n    end\n\n\n    %% =========================\n    %% COMMUNICATION\n    %% =========================\n\n    ESP --&gt;|Wi-Fi + MQTT&lt;br/&gt;Dữ liệu cảm biến| MQTT\n\n    MQTT --&gt;|MQTT command / status| ESP\n\n    MQTT --&gt;|MQTT Publish / Subscribe| BACKEND\n\n    BACKEND --&gt;|Query / Insert| DB\n\n    BACKEND --&gt;|HTTP API + Socket.IO| WEB&quot;,&#xa;  &quot;config&quot;: null&#xa;}" id="qzF-isli044HWFQt_X8x-38">
+          <mxCell connectable="0" parent="1" style="group;transparentBounds=1;editIcon=1;lockedGroup=0;groupPadding=10;" vertex="1">
+            <mxGeometry as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="THIẾT BỊ / HARDWARE" mermaidId="n:HW" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;verticalAlign=top;fillColor=light-dark(#ffffde,#1f2020);strokeColor=light-dark(#aaaa33,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="THIẾT BỊ / HARDWARE" id="qzF-isli044HWFQt_X8x-39">
+          <mxCell parent="qzF-isli044HWFQt_X8x-38" style="html=1;whiteSpace=wrap;strokeWidth=1;verticalAlign=top;fillColor=light-dark(#ffffde,#1f2020);strokeColor=light-dark(#aaaa33,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="266" width="1069" x="-600" y="274" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="DHT11&#xa;Nhiệt độ + Độ ẩm" mermaidId="n:DHT" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="DHT11&#xa;Nhiệt độ + Độ ẩm" id="qzF-isli044HWFQt_X8x-40">
+          <mxCell parent="qzF-isli044HWFQt_X8x-39" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="73" width="188" x="40" y="168" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Cảm biến ánh sáng&#xa;Cường độ ánh sáng" mermaidId="n:LIGHT" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Cảm biến ánh sáng&#xa;Cường độ ánh sáng" id="qzF-isli044HWFQt_X8x-41">
+          <mxCell parent="qzF-isli044HWFQt_X8x-39" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="73" width="197" x="35" y="45" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="ESP32&#xa;Bộ điều khiển trung tâm" mermaidId="n:ESP" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="ESP32&#xa;Bộ điều khiển trung tâm" id="qzF-isli044HWFQt_X8x-42">
+          <mxCell parent="qzF-isli044HWFQt_X8x-39" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="73" width="236" x="366" y="86" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="3 × LED&#xa;Thiết bị thực thi" mermaidId="n:LED" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="3 × LED&#xa;Thiết bị thực thi" id="qzF-isli044HWFQt_X8x-43">
+          <mxCell parent="qzF-isli044HWFQt_X8x-39" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="73" width="179" x="855" y="168" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Đọc dữ liệu" mermaidId="e:DHT-&gt;ESP#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.51;entryX=0.15;entryY=1;" mermaidBaseValue="Đọc dữ liệu" id="qzF-isli044HWFQt_X8x-44">
+          <mxCell edge="1" parent="qzF-isli044HWFQt_X8x-39" source="qzF-isli044HWFQt_X8x-40" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.51;entryX=0.15;entryY=1;rounded=0;" target="qzF-isli044HWFQt_X8x-42">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="299" y="205" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Đọc dữ liệu" mermaidId="e:LIGHT-&gt;ESP#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.51;entryX=0;entryY=0.14;" mermaidBaseValue="Đọc dữ liệu" id="qzF-isli044HWFQt_X8x-45">
+          <mxCell edge="1" parent="qzF-isli044HWFQt_X8x-39" source="qzF-isli044HWFQt_X8x-41" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.51;entryX=0;entryY=0.14;rounded=0;" target="qzF-isli044HWFQt_X8x-42">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="299" y="82" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Điều khiển GPIO" mermaidId="e:ESP-&gt;LED#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=0.93;exitY=1;entryX=0;entryY=0.51;" mermaidBaseValue="Điều khiển GPIO" id="qzF-isli044HWFQt_X8x-46">
+          <mxCell edge="1" parent="qzF-isli044HWFQt_X8x-39" source="qzF-isli044HWFQt_X8x-42" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=0.93;exitY=1;entryX=0;entryY=0.51;rounded=0;" target="qzF-isli044HWFQt_X8x-43">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="715" y="205" />
+                <mxPoint x="827" y="205" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="TẦNG MẠNG" mermaidId="n:NET" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;verticalAlign=top;fillColor=light-dark(#ffffde,#1f2020);strokeColor=light-dark(#aaaa33,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="TẦNG MẠNG" id="qzF-isli044HWFQt_X8x-47">
+          <mxCell parent="qzF-isli044HWFQt_X8x-38" style="html=1;whiteSpace=wrap;strokeWidth=1;verticalAlign=top;fillColor=light-dark(#ffffde,#1f2020);strokeColor=light-dark(#aaaa33,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="206" width="757" x="217" y="48" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="MQTT Broker&#xa;Eclipse Mosquitto&#xa;Local :1883" mermaidId="n:MQTT" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="MQTT Broker&#xa;Eclipse Mosquitto&#xa;Local :1883" id="qzF-isli044HWFQt_X8x-48">
+          <mxCell parent="qzF-isli044HWFQt_X8x-47" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="93" width="185" x="35" y="45" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="MQTT Topics&#xa;&#xa;iot/sensors/data&#xa;iot/devices/command&#xa;iot/devices/status" mermaidId="n:TOPICS" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="MQTT Topics&#xa;&#xa;iot/sensors/data&#xa;iot/devices/command&#xa;iot/devices/status" id="qzF-isli044HWFQt_X8x-49">
+          <mxCell parent="qzF-isli044HWFQt_X8x-47" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="131" width="219" x="503" y="50" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:MQTT-&gt;TOPICS#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=none;strokeColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.71;entryX=0;entryY=0.5;" mermaidBaseValue="" id="qzF-isli044HWFQt_X8x-50">
+          <mxCell edge="1" parent="qzF-isli044HWFQt_X8x-47" source="qzF-isli044HWFQt_X8x-48" style="curved=1;startArrow=none;endArrow=none;strokeColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.71;entryX=0;entryY=0.5;rounded=0;" target="qzF-isli044HWFQt_X8x-49">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="245" y="116" />
+                <mxPoint x="362" y="116" />
+                <mxPoint x="478" y="116" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="TẦNG ỨNG DỤNG" mermaidId="n:APP" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;verticalAlign=top;fillColor=light-dark(#ffffde,#1f2020);strokeColor=light-dark(#aaaa33,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="TẦNG ỨNG DỤNG" id="qzF-isli044HWFQt_X8x-51">
+          <mxCell parent="qzF-isli044HWFQt_X8x-38" style="html=1;whiteSpace=wrap;strokeWidth=1;verticalAlign=top;fillColor=light-dark(#ffffde,#1f2020);strokeColor=light-dark(#aaaa33,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="552" width="1154" x="702" y="-524" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Backend&#xa;Node.js + Express&#xa;mqtt + socket.io" mermaidId="n:BACKEND" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Backend&#xa;Node.js + Express&#xa;mqtt + socket.io" id="qzF-isli044HWFQt_X8x-52">
+          <mxCell parent="qzF-isli044HWFQt_X8x-51" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="93" width="186" x="35" y="183" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="MySQL Database&#xa;&#xa;Sensor&#xa;Data Sensor&#xa;Devices&#xa;Active_history&#xa;Profile" mermaidId="n:DB" mermaidBaseStyle="html=1;shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=10;strokeWidth=1;whiteSpace=wrap;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="MySQL Database&#xa;&#xa;Sensor&#xa;Data Sensor&#xa;Devices&#xa;Active_history&#xa;Profile" id="qzF-isli044HWFQt_X8x-53">
+          <mxCell parent="qzF-isli044HWFQt_X8x-51" style="html=1;shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=10;strokeWidth=1;whiteSpace=wrap;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="177" width="131" x="601" y="350" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Frontend Web&#xa;HTML + CSS + JavaScript&#xa;Chart.js" mermaidId="n:WEB" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Frontend Web&#xa;HTML + CSS + JavaScript&#xa;Chart.js" id="qzF-isli044HWFQt_X8x-54">
+          <mxCell parent="qzF-isli044HWFQt_X8x-51" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="93" width="234" x="549" y="207" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Các chức năng Web&#xa;&#xa;Dashboard&#xa;Data Sensor&#xa;Active History&#xa;Profile" mermaidId="n:PAGES" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Các chức năng Web&#xa;&#xa;Dashboard&#xa;Data Sensor&#xa;Active History&#xa;Profile" id="qzF-isli044HWFQt_X8x-55">
+          <mxCell parent="qzF-isli044HWFQt_X8x-51" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="150" width="200" x="919" y="179" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Socket.IO&#xa;Truyền / cập nhật dữ liệu giữa Backend và Web&#xa;&#xa;Yêu cầu cập nhật dữ liệu: 2 giây/lần" mermaidId="n:SOCKET" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Socket.IO&#xa;Truyền / cập nhật dữ liệu giữa Backend và Web&#xa;&#xa;Yêu cầu cập nhật dữ liệu: 2 giây/lần" id="qzF-isli044HWFQt_X8x-56">
+          <mxCell parent="qzF-isli044HWFQt_X8x-51" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="112" width="406" x="463" y="45" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:WEB-&gt;PAGES#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=none;strokeColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.51;entryX=0;entryY=0.5;" mermaidBaseValue="" id="qzF-isli044HWFQt_X8x-57">
+          <mxCell edge="1" parent="qzF-isli044HWFQt_X8x-51" source="qzF-isli044HWFQt_X8x-54" style="curved=1;startArrow=none;endArrow=none;strokeColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.51;entryX=0;entryY=0.5;rounded=0;" target="qzF-isli044HWFQt_X8x-55">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:BACKEND-&gt;SOCKET#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=none;strokeColor=light-dark(#333333,#cccccc);exitX=0.76;exitY=0;entryX=0;entryY=0.5;" mermaidBaseValue="" id="qzF-isli044HWFQt_X8x-58">
+          <mxCell edge="1" parent="qzF-isli044HWFQt_X8x-51" source="qzF-isli044HWFQt_X8x-52" style="curved=1;startArrow=none;endArrow=none;strokeColor=light-dark(#333333,#cccccc);exitX=0.76;exitY=0;entryX=0;entryY=0.5;rounded=0;" target="qzF-isli044HWFQt_X8x-56">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="262" y="101" />
+                <mxPoint x="363" y="101" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Query / Insert" mermaidId="e:BACKEND-&gt;DB#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=0.66;exitY=1;entryX=0;entryY=0.5;" mermaidBaseValue="Query / Insert" id="qzF-isli044HWFQt_X8x-59">
+          <mxCell edge="1" parent="qzF-isli044HWFQt_X8x-51" source="qzF-isli044HWFQt_X8x-52" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=0.66;exitY=1;entryX=0;entryY=0.5;rounded=0;" target="qzF-isli044HWFQt_X8x-53">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="262" y="439" />
+                <mxPoint x="363" y="439" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="HTTP API + Socket.IO" mermaidId="e:BACKEND-&gt;WEB#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.68;entryX=0;entryY=0.51;" mermaidBaseValue="HTTP API + Socket.IO" id="qzF-isli044HWFQt_X8x-60">
+          <mxCell edge="1" parent="qzF-isli044HWFQt_X8x-51" source="qzF-isli044HWFQt_X8x-52" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.68;entryX=0;entryY=0.51;rounded=0;" target="qzF-isli044HWFQt_X8x-54">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="262" y="254" />
+                <mxPoint x="363" y="254" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Wi-Fi + MQTT&#xa;Dữ liệu cảm biến" mermaidId="e:ESP-&gt;MQTT#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.678082191780822;entryX=0;entryY=0.6397849462365591;curved=1;exitX=1;exitY=0.68;entryX=0;entryY=0.64;" mermaidBaseValue="Wi-Fi + MQTT&#xa;Dữ liệu cảm biến" id="qzF-isli044HWFQt_X8x-61">
+          <mxCell edge="1" parent="qzF-isli044HWFQt_X8x-38" source="qzF-isli044HWFQt_X8x-42" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.68;entryX=0;entryY=0.64;rounded=0;" target="qzF-isli044HWFQt_X8x-48">
+            <mxGeometry relative="1" as="geometry">
+              <mxPoint as="offset" />
+              <Array as="points">
+                <mxPoint x="127" y="343" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="MQTT command / status" mermaidId="e:MQTT-&gt;ESP#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=0;exitY=0.3602150537634409;entryX=1;entryY=0.3219178082191781;curved=1;exitX=0;exitY=0.36;entryX=1;entryY=0.32;" mermaidBaseValue="MQTT command / status" id="qzF-isli044HWFQt_X8x-62">
+          <mxCell edge="1" parent="qzF-isli044HWFQt_X8x-38" source="qzF-isli044HWFQt_X8x-48" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=0;exitY=0.36;entryX=1;entryY=0.32;rounded=0;" target="qzF-isli044HWFQt_X8x-42">
+            <mxGeometry relative="1" as="geometry">
+              <mxPoint as="offset" />
+              <Array as="points">
+                <mxPoint x="127" y="169" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="MQTT Publish / Subscribe" mermaidId="e:MQTT-&gt;BACKEND#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.28;entryX=0.41;entryY=1;" mermaidBaseValue="MQTT Publish / Subscribe" id="qzF-isli044HWFQt_X8x-63">
+          <mxCell edge="1" parent="qzF-isli044HWFQt_X8x-38" source="qzF-isli044HWFQt_X8x-48" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.28;entryX=0.41;entryY=1;rounded=0;" target="qzF-isli044HWFQt_X8x-52">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="462" y="114" />
+                <mxPoint x="579" y="114" />
+                <mxPoint x="695" y="114" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
