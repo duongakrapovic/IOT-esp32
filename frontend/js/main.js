@@ -28,7 +28,7 @@ async function loadPage(pageName, element) {
         // 3. Đắp mã HTML vào vùng nội dung chính
         document.getElementById('app-content').innerHTML = html;
         
-        // 4. Kích hoạt các hàm xử lý dữ liệu tương ứng (được viết bên file api.js)
+        // 4. Kích hoạt các hàm xử lý dữ liệu tương ứng với từng trang
         if (pageName === 'dashboard') {
             initDashboard();
         } else if (pageName === 'dataSensor') {
@@ -49,7 +49,8 @@ async function loadPage(pageName, element) {
 //     const savedPage = localStorage.getItem('currentPage') || 'dashboard';
 //     loadPage(savedPage);
 // };
-// Tự động load trang Dashboard khi vừa truy cập web lần đầu , f5 cũng về dashboard
+
+// Tự động load trang Dashboard khi vừa truy cập web lần đầu, F5 cũng về dashboard
 window.onload = () => {
     loadPage('dashboard', document.querySelector('.sidebar nav ul li.active'));
 };

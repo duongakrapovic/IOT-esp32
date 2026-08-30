@@ -1,0 +1,69 @@
+/* =========================================================
+   BODY & LAYOUT
+   ========================================================= */
+
+body {
+    background-color: #1a1e29;
+    color: #ffffff;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.container {
+    display: flex;
+    height: 100%;
+}
+
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+.sidebar {
+    width: 200px;
+    background-color: #23283b;
+    padding: 40px 20px;
+    border-right: 1px solid #2d334a;
+}
+
+.sidebar nav ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.sidebar nav a {
+    text-decoration: none;
+    color: #e2e8f0;
+    font-size: 16px;
+}
+
+.sidebar nav li.active a {
+    color: #4ade80;
+}
+
+
+/* =========================================================
+   MAIN CONTENT
+   ========================================================= */
+
+.main-content {
+    flex: 1;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+}
+
+
+/* =========================================================
+   PANEL
+   ========================================================= */
+
+.panel {
+    background-color: #23283b;
+    border-radius: 8px;
+    padding: 25px;
+}

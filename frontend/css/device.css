@@ -1,0 +1,187 @@
+/* =========================================================
+   DEVICE CONTROL
+   ========================================================= */
+
+.device-panel {
+    padding: 25px;
+}
+
+.panel-title {
+    font-size: 18px;
+    color: #cbd5e1;
+    margin-bottom: 25px;
+    font-weight: normal;
+}
+
+.device-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.device-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    background-color: #1e2235;
+
+    padding: 20px 25px;
+
+    border-radius: 8px;
+}
+
+.device-name {
+    font-size: 18px;
+    font-weight: 500;
+}
+
+
+/* =========================================================
+   TOGGLE SWITCH
+   ========================================================= */
+
+.switch {
+    position: relative;
+
+    display: inline-block;
+
+    width: 105px;
+    height: 48px;
+
+    flex-shrink: 0;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+
+/* ---------------------------------------------------------
+   Thanh công tắc
+   --------------------------------------------------------- */
+
+.slider {
+    position: absolute;
+
+    inset: 0;
+
+    cursor: pointer;
+
+    background-color: #f87171;
+
+    border-radius: 52px;
+
+    transition: 0.3s;
+
+    box-shadow:
+        inset 0 2px 3px rgba(0, 0, 0, 0.12);
+}
+
+
+/* ---------------------------------------------------------
+   Nút tròn
+   --------------------------------------------------------- */
+
+.slider::before {
+    content: "";
+
+    position: absolute;
+
+    width: 42px;
+    height: 42px;
+
+    left: 3px;
+    top: 3px;
+
+    background-color: #f5f5f5;
+
+    border-radius: 50%;
+
+    transition: 0.3s;
+
+    box-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+
+/* ---------------------------------------------------------
+   OFF
+   --------------------------------------------------------- */
+
+.switch input:not(:checked) + .slider {
+    background-color: #f87171;
+}
+
+
+/* ---------------------------------------------------------
+   ON
+   --------------------------------------------------------- */
+
+.switch input:checked + .slider {
+    background-color: #4ade80;
+}
+
+
+/* Nút trượt sang phải */
+
+.switch input:checked + .slider::before {
+    transform: translateX(57px);
+}
+
+
+/* =========================================================
+   SWITCH TEXT
+   ========================================================= */
+
+.switch-text {
+    position: absolute;
+
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    font-size: 27px;
+
+    font-weight: 400;
+
+    line-height: 1;
+
+    transition: 0.3s;
+
+    pointer-events: none;
+}
+
+
+/* Chữ ON */
+
+.on-text {
+    left: 25px;
+    color: #eeeeee;
+    opacity: 0;
+}
+
+
+/* Chữ OFF */
+
+.off-text {
+    right: 12px;
+    color: #eeeeee;
+    opacity: 1;
+}
+
+
+/* Hiện ON khi bật */
+
+.switch input:checked + .slider .on-text {
+    opacity: 1;
+}
+
+
+/* Ẩn OFF khi bật */
+
+.switch input:checked + .slider .off-text {
+    opacity: 0;
+}
