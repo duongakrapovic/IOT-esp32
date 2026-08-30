@@ -4,7 +4,7 @@ const mqtt = require('mqtt');
 const client = mqtt.connect('mqtt://localhost:1883');
 
 client.on('connect', () => {
-    console.log('✅ Đã kết nối thành công tới MQTT Broker (Mosquitto)');
+    console.log('kết nối thành công tới MQTT Broker (Mosquitto)');
     
     // Đăng ký (Subscribe) lắng nghe các topic từ phần cứng ESP32 gửi lên
     client.subscribe('iot/sensors/data');

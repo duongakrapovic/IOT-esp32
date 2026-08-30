@@ -269,7 +269,7 @@ body {
 
     cursor: pointer;
 
-    background-color: #bcbec2;
+    background-color: #f87171;
 
     border-radius: 52px;
 
@@ -311,7 +311,7 @@ body {
    --------------------------------------------------------- */
 
 .switch input:not(:checked) + .slider {
-    background-color: #bcbec2;
+    background-color: #f87171;
 }
 
 

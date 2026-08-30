@@ -40,12 +40,19 @@ mqttClient.on('message', async (topic, message) => {
 
             const now = new Date();
             const timeString = now.toLocaleTimeString('vi-VN'); // VD: 14:05:22
+            const fullTimeString = `${timeString}, ${now.toLocaleDateString('vi-VN')}`;
 
-            // Đẩy dữ liệu ra giao diện qua Socket.IO
-            io.emit('newData', { temperature, humidity, light, timeString });
+            // Gửi đầy đủ thông tin kèm ID mới lưu sang Socket để Frontend vẽ trực tiếp
+            io.emit('newData', { 
+                id: result.insertId,
+                temperature, 
+                humidity, 
+                light, 
+                timeString,
+                fullTimeString
+            });
             
-            // In rõ ID bản ghi vừa thêm và thời gian thực
-            console.log(`[#${result.insertId} | ${timeString}] Đã nhận & Lưu DB: ${temperature}°C | ${humidity}% | ${light} Lux`);
+            console.log(`[#${result.insertId} | ${timeString}] sencor ${temperature}°C | ${humidity}% | ${light} Lux`);
         } catch (err) {
             console.error("Lỗi xử lý dữ liệu MQTT:", err.message);
         }
@@ -53,5 +60,5 @@ mqttClient.on('message', async (topic, message) => {
 });
 
 server.listen(PORT, () => {
-    console.log(`🚀 Server đang chạy tại địa chỉ: http://localhost:${PORT}`);
+    console.log(`Server đang chạy tại địa chỉ: http://localhost:${PORT}`);
 });

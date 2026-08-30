@@ -5,10 +5,19 @@
  */
 
 async function loadPage(pageName, element) {
+    // Lưu lại trang hiện tại vào localStorage
+    localStorage.setItem('currentPage', pageName);
+
     // 1. Đổi màu mục đang chọn trên Menu
+    document.querySelectorAll('.sidebar nav ul li').forEach(el => el.classList.remove('active'));
     if (element) {
-        document.querySelectorAll('.sidebar nav ul li').forEach(el => el.classList.remove('active'));
         element.classList.add('active');
+    } else {
+        // Tự động tìm và active thẻ menu tương ứng khi tải lại trang
+        const targetLi = Array.from(document.querySelectorAll('.sidebar nav ul li')).find(li => 
+            li.getAttribute('onclick') && li.getAttribute('onclick').includes(pageName)
+        );
+        if (targetLi) targetLi.classList.add('active');
     }
 
     try {
@@ -35,7 +44,12 @@ async function loadPage(pageName, element) {
     }
 }
 
-// Tự động load trang Dashboard khi vừa truy cập web lần đầu
+// Khi F5 hoặc vào web: Lấy lại trang đã lưu trước đó (mặc định là 'dashboard')
+// window.onload = () => {
+//     const savedPage = localStorage.getItem('currentPage') || 'dashboard';
+//     loadPage(savedPage);
+// };
+// Tự động load trang Dashboard khi vừa truy cập web lần đầu , f5 cũng về dashboard
 window.onload = () => {
     loadPage('dashboard', document.querySelector('.sidebar nav ul li.active'));
 };

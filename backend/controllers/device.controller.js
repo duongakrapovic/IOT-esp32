@@ -14,7 +14,7 @@ exports.controlDevice = async (req, res) => {
         const commandPayload = JSON.stringify({ device: device_id, status: action });
         mqttClient.publish('iot/devices/command', commandPayload);
 
-        console.log(`[API] Đã gửi lệnh & Lưu lịch sử DB: ${device_id} -> ${action}`);
+        console.log(` ${device_id} -> ${action}`);
         res.json({ status: 'success', message: 'Lệnh đã được gửi và lưu lịch sử' });
     } catch (error) {
         console.error("Lỗi điều khiển thiết bị:", error);

@@ -16,7 +16,7 @@ pool.getConnection((err, connection) => {
     if (err) {
         console.error('Lỗi kết nối Cơ sở dữ liệu:', err.message);
     } else {
-        console.log('✅ Đã kết nối thành công tới MySQL (iot_project)');
+        console.log('kết nối thành công tới MySQL (iot_project)');
         connection.release();
     }
 });

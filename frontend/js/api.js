@@ -285,7 +285,41 @@ function initDashboard() {
         });
 
     });
+    // Gọi lấy 13 bản ghi gần nhất để hiển thị biểu đồ ngay lập tức
+    fetch('http://localhost:5000/api/sensors/history?limit=13&sort=desc')
+        .then(res => res.json())
+        .then(resData => {
+            if (resData.status === 'success' && resData.data.length > 0) {
+                const recentData = resData.data.reverse();
+                sensorChart.data.labels = recentData.map(item => new Date(item.time).toLocaleTimeString('vi-VN'));
+                sensorChart.data.datasets[0].data = recentData.map(item => Math.round(item.temperature || 0));
+                sensorChart.data.datasets[1].data = recentData.map(item => Math.round(item.humidity || 0));
+                sensorChart.data.datasets[2].data = recentData.map(item => Math.round(item.light || 0));
+                sensorChart.update();
 
+                const latest = recentData[recentData.length - 1];
+                document.getElementById('temp-value').innerText = Math.round(latest.temperature || 0) + ' °C';
+                document.getElementById('humid-value').innerText = Math.round(latest.humidity || 0) + ' %';
+                document.getElementById('light-value').innerText = Math.round(latest.light || 0) + ' Lux';
+            }
+        })
+        .catch(err => console.error("Lỗi tải lịch sử sensor:", err));
+    // Đồng bộ trạng thái công tắc theo lịch sử gần nhất
+    fetch('http://localhost:5000/api/history?limit=50&sort=desc')
+        .then(res => res.json())
+        .then(resData => {
+            if (resData.status === 'success' && resData.data.length > 0) {
+                ['device1', 'device2', 'device3'].forEach(devId => {
+                    const devName = devId === 'device1' ? 'Đèn 1' : (devId === 'device2' ? 'Đèn 2' : 'Đèn 3');
+                    const lastAction = resData.data.find(item => item.device_name === devName);
+                    const toggleInput = document.getElementById(devId);
+                    if (toggleInput && lastAction) {
+                        toggleInput.checked = (lastAction.action === 'ON');
+                    }
+                });
+            }
+        })
+        .catch(err => console.error("Lỗi đồng bộ công tắc:", err));    
 }
 
 // ==========================================
@@ -672,14 +706,15 @@ function initProfile() {
                         'pro-github'
                     );
 
+                const githubUrl = info.gitlink || info.gitink || info.github;
 
-                if (info.github) {
+                if (githubUrl) {
 
                     gh.innerText =
-                        info.github;
+                        githubUrl;
 
                     gh.href =
-                        info.github;
+                        githubUrl;
 
                 } else {
 
@@ -693,14 +728,15 @@ function initProfile() {
                         'pro-figma'
                     );
 
+                const figmaUrl = info.figmalink || info.figma;
 
-                if (info.figma) {
+                if (figmaUrl) {
 
                     fg.innerText =
-                        info.figma;
+                        figmaUrl;
 
                     fg.href =
-                        info.figma;
+                        figmaUrl;
 
                 } else {
 
