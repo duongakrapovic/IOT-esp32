@@ -1,21 +1,27 @@
 {
     "folders": [
         {
+            "name": "backend",
             "path": "backend"
         },
         {
+            "name": "database",
             "path": "database"
         },
         {
+            "name": "doc",
             "path": "doc"
         },
         {
+            "name": "frontend",
             "path": "frontend"
         },
         {
+            "name": "hardware",
             "path": "hardware"
         },
         {
+            "name": "inputAI",
             "path": "inputAI"
         }
     ],

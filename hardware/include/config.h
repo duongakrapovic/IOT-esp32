@@ -8,8 +8,11 @@
 extern const char* ssid;
 extern const char* password;
 
-// IPv4 của Laptop đang chạy Mosquitto + Backend
 extern const char* mqtt_server;
+extern const int mqtt_port;
+
+extern const char* mqtt_username;
+extern const char* mqtt_password;
 
 // ==========================================
 // CHÂN CẮM PHẦN CỨNG
@@ -30,7 +33,6 @@ extern const char* mqtt_server;
 
 #define SENSOR_INTERVAL 2000
 
-// Thang ánh sáng hiện tại
 #define LIGHT_MAX_LUX 5000.0
 
 #endif

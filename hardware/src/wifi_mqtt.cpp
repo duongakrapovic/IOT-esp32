@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <PubSubClient.h>
 
 #include "config.h"
@@ -10,7 +11,7 @@
 // WIFI & MQTT CLIENT
 // ==========================================
 
-WiFiClient espClient;
+WiFiClientSecure espClient;
 PubSubClient client(espClient);
 
 // ==========================================
@@ -24,7 +25,6 @@ void initWiFi() {
     Serial.print("Dang ket noi WiFi");
 
     while (WiFi.status() != WL_CONNECTED) {
-
         delay(500);
         Serial.print(".");
     }
@@ -42,12 +42,13 @@ void initWiFi() {
 
 void initMQTT() {
 
-    client.setServer(mqtt_server, 1883);
+    // Cho phép kết nối TLS tới HiveMQ Cloud
+    espClient.setInsecure();
+
+    client.setServer(mqtt_server, mqtt_port);
     client.setCallback(mqttCallback);
 
-    Serial.println(
-        "[OK] MQTT configuration ready!"
-    );
+    Serial.println("[OK] MQTT configuration ready!");
 }
 
 // ==========================================
@@ -58,32 +59,24 @@ void reconnectMQTT() {
 
     while (!client.connected()) {
 
-        Serial.print(
-            "Dang ket noi MQTT Broker..."
-        );
+        Serial.print("Dang ket noi MQTT Broker...");
 
-        if (client.connect("ESP32_IoT_Gateway")) {
+        if (client.connect(
+            "ESP32_IoT_Gateway",
+            mqtt_username,
+            mqtt_password
+        )) {
 
-            Serial.println(
-                " [OK] Da ket noi!"
-            );
+            Serial.println(" [OK] Da ket noi!");
 
-            // Nhận lệnh điều khiển LED
-            client.subscribe(
-                "iot/devices/command"
-            );
+            client.subscribe("iot/devices/command");
 
         } else {
 
-            Serial.print(
-                " That bai, rc="
-            );
-
+            Serial.print(" That bai, rc=");
             Serial.print(client.state());
 
-            Serial.println(
-                " - thu lai sau 5s"
-            );
+            Serial.println(" - thu lai sau 5s");
 
             delay(5000);
         }

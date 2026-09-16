@@ -1,18 +1,29 @@
 const mqtt = require('mqtt');
 
-// Kết nối tới MQTT Broker (Mosquitto đang chạy cục bộ ở port 1883)
-const client = mqtt.connect('mqtt://localhost:1883');
+const options = {
+    username: 'iot_project',
+    password: '12345678'
+};
+
+const client = mqtt.connect(
+    'mqtts://c8b86407ac1540f19bc71edc98150df0.s1.eu.hivemq.cloud:8883',
+    options
+);
 
 client.on('connect', () => {
-    console.log('kết nối thành công tới MQTT Broker (Mosquitto)');
-    
-    // Đăng ký (Subscribe) lắng nghe các topic từ phần cứng ESP32 gửi lên
+
+    console.log('Kết nối thành công tới HiveMQ Cloud');
+
     client.subscribe('iot/sensors/data');
+
     client.subscribe('iot/devices/status');
+
 });
 
 client.on('error', (err) => {
+
     console.error('Lỗi kết nối MQTT:', err.message);
+
 });
 
 module.exports = client;

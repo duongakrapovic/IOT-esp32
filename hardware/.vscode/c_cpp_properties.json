@@ -10,6 +10,7 @@
             "includePath": [
                 "D:/coding/IOT-Project/hardware/include",
                 "D:/coding/IOT-Project/hardware/src",
+                "C:/Users/Asus/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
                 "C:/Users/Asus/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                 "D:/coding/IOT-Project/hardware/.pio/libdeps/esp32doit-devkit-v1/ArduinoJson/src",
                 "D:/coding/IOT-Project/hardware/.pio/libdeps/esp32doit-devkit-v1/DHT sensor library",
@@ -240,7 +241,6 @@
                 "C:/Users/Asus/.platformio/packages/framework-arduinoespressif32/libraries/USB/src",
                 "C:/Users/Asus/.platformio/packages/framework-arduinoespressif32/libraries/Update/src",
                 "C:/Users/Asus/.platformio/packages/framework-arduinoespressif32/libraries/WebServer/src",
-                "C:/Users/Asus/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
                 "C:/Users/Asus/.platformio/packages/framework-arduinoespressif32/libraries/WiFiProv/src",
                 "C:/Users/Asus/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                 ""
@@ -250,6 +250,7 @@
                 "path": [
                     "D:/coding/IOT-Project/hardware/include",
                     "D:/coding/IOT-Project/hardware/src",
+                    "C:/Users/Asus/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
                     "C:/Users/Asus/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                     "D:/coding/IOT-Project/hardware/.pio/libdeps/esp32doit-devkit-v1/ArduinoJson/src",
                     "D:/coding/IOT-Project/hardware/.pio/libdeps/esp32doit-devkit-v1/DHT sensor library",
@@ -480,14 +481,13 @@
                     "C:/Users/Asus/.platformio/packages/framework-arduinoespressif32/libraries/USB/src",
                     "C:/Users/Asus/.platformio/packages/framework-arduinoespressif32/libraries/Update/src",
                     "C:/Users/Asus/.platformio/packages/framework-arduinoespressif32/libraries/WebServer/src",
-                    "C:/Users/Asus/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
                     "C:/Users/Asus/.platformio/packages/framework-arduinoespressif32/libraries/WiFiProv/src",
                     "C:/Users/Asus/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                     ""
                 ]
             },
             "defines": [
-                "PLATFORMIO=60119",
+                "PLATFORMIO=60200",
                 "ARDUINO_ESP32_DEV",
                 "HAVE_CONFIG_H",
                 "MBEDTLS_CONFIG_FILE=\"mbedtls/esp_config.h\"",
