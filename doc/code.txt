@@ -1,0 +1,17 @@
+cmd 1
+"C:\Users\Asus\.platformio\penv\Scripts\platformio.exe" device monitor -p COM5 -b 115200
+
+cmd 2
+mosquitto_sub -h c8b86407ac1540f19bc71edc98150df0.s1.eu.hivemq.cloud -p 8883 -u "iot_project" -P "12345678" --tls-version tlsv1.2 --insecure -t "iot/sensors/data" -v
+
+cmd 3 - led status
+mosquitto_sub -h c8b86407ac1540f19bc71edc98150df0.s1.eu.hivemq.cloud -p 8883 -u "iot_project" -P "12345678" --tls-version tlsv1.2 --insecure -t "iot/devices/status" -v
+
+cmd 4 - led1 on
+mosquitto_pub -h c8b86407ac1540f19bc71edc98150df0.s1.eu.hivemq.cloud -p 8883 -u "iot_project" -P "12345678" --tls-version tlsv1.2 --insecure -t "iot/devices/command" -m "{\"device_id\":1,\"action\":\"ON\"}"
+
+cmd 5 - led1 off
+mosquitto_pub -h c8b86407ac1540f19bc71edc98150df0.s1.eu.hivemq.cloud -p 8883 -u "iot_project" -P "12345678" --tls-version tlsv1.2 --insecure -t "iot/devices/command" -m "{\"device_id\":1,\"action\":\"OFF\"}"
+
+cmd6 - led2 on
+mosquitto_pub -h c8b86407ac1540f19bc71edc98150df0.s1.eu.hivemq.cloud -p 8883 -u "iot_project" -P "12345678" --tls-version tlsv1.2 --insecure -t "iot/devices/command" -m "{\"device_id\":2,\"action\":\"ON\"}"

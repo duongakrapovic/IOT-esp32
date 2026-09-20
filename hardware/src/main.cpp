@@ -2,102 +2,109 @@
 
 #include "config.h"
 #include "sensors.h"
-#include "mqtt_handler.h"
-#include "wifi_mqtt.h"
-#include "led_control.h"
-#include "data_publish.h"
+#include "devices.h"
+#include "mqtt.h"
 
-// ==========================================
-// THỜI GIAN ĐỌC SENSOR
-// ==========================================
-
-unsigned long lastMsg = 0;
-
-// ==========================================
-// SETUP
-// ==========================================
+static unsigned long lastSensorPublish = 0;
 
 void setup() {
 
     Serial.begin(115200);
-    Serial.flush();
 
-    // --------------------------------------
-    // LED
-    // --------------------------------------
+    delay(500);
 
-    initLEDs();
+    Serial.println();
+    Serial.println("==============================");
+    Serial.println("ESP32 IoT SYSTEM START");
+    Serial.println("==============================");
 
-    // --------------------------------------
-    // DHT11 + LDR
-    // --------------------------------------
+    initDevices();
+
+    Serial.println(
+        "[OK] Devices initialized"
+    );
 
     initSensors();
 
-    // --------------------------------------
-    // WIFI
-    // --------------------------------------
+    Serial.println(
+        "[OK] Sensors initialized"
+    );
 
-    initWiFi();
+    initMqtt();
 
-    // --------------------------------------
-    // MQTT
-    // --------------------------------------
-
-    initMQTT();
-
+    Serial.println(
+        "[OK] MQTT initialized"
+    );
 }
-
-// ==========================================
-// LOOP
-// ==========================================
 
 void loop() {
 
-    // --------------------------------------
-    // MQTT
-    // --------------------------------------
-
     mqttLoop();
 
-    // --------------------------------------
-    // ĐỌC CẢM BIẾN MỖI 2 GIÂY
-    // --------------------------------------
+    unsigned long currentTime =
+        millis();
 
-    unsigned long now = millis();
+    if (
+        currentTime - lastSensorPublish
+        >= SENSOR_INTERVAL
+    ) {
 
-    if (now - lastMsg > SENSOR_INTERVAL) {
+        lastSensorPublish =
+            currentTime;
 
-        lastMsg = now;
+        SensorData sensorData;
 
-        float temperature;
-        float humidity;
-        int light;
+        if (
+            readSensors(sensorData)
+        ) {
 
-        // ----------------------------------
-        // ĐỌC SENSOR
-        // ----------------------------------
+            Serial.print(
+                "[SENSOR] Temperature: "
+            );
 
-        if (readSensors(
-            temperature,
-            humidity,
-            light
-        )) {
+            Serial.print(
+                sensorData.temperature
+            );
 
-            // ------------------------------
-            // GỬI MQTT
-            // ------------------------------
+            Serial.println(
+                " C"
+            );
+
+
+            Serial.print(
+                "[SENSOR] Humidity: "
+            );
+
+            Serial.print(
+                sensorData.humidity
+            );
+
+            Serial.println(
+                " %"
+            );
+
+
+            Serial.print(
+                "[SENSOR] Light: "
+            );
+
+            Serial.print(
+                sensorData.light
+            );
+
+            Serial.println(
+                " Lux"
+            );
+
 
             publishSensorData(
-                temperature,
-                humidity,
-                light
+                sensorData
             );
 
         } else {
 
             Serial.println(
-                "Loi: Khong doc duoc DHT11"
+                "[ERROR] Sensor reading failed"
             );
         }
     }

@@ -1,20 +1,14 @@
 #ifndef SENSORS_H
 #define SENSORS_H
 
-// ==========================================
-// KHỞI TẠO CẢM BIẾN
-// ==========================================
+struct SensorData {
+    float temperature;
+    float humidity;
+    int light;
+};
 
 void initSensors();
 
-// ==========================================
-// ĐỌC DỮ LIỆU CẢM BIẾN
-// ==========================================
-
-bool readSensors(
-    float &temperature,
-    float &humidity,
-    int &light
-);
+bool readSensors(SensorData &sensorData);
 
 #endif

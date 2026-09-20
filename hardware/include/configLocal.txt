@@ -1,0 +1,18 @@
+#ifndef CONFIG_EXAMPLE_H
+#define CONFIG_EXAMPLE_H
+
+// Copy file này thành:
+// hardware/include/configLocal.h
+//
+// Sau đó điền thông tin thật của máy bạn.
+
+#define WIFI_SSID "YOUR_WIFI_SSID"
+#define WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
+
+#define MQTT_SERVER "YOUR_HIVEMQ_HOST"
+#define MQTT_PORT 8883
+
+#define MQTT_USERNAME "YOUR_HIVEMQ_USERNAME"
+#define MQTT_PASSWORD "YOUR_HIVEMQ_PASSWORD"
+
+#endif

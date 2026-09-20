@@ -1,77 +1,55 @@
 #include <Arduino.h>
 #include <DHT.h>
+#include <math.h>
+
 #include "config.h"
 #include "sensors.h"
 
-// ==========================================
-// KHỞI TẠO DHT
-// ==========================================
-
-DHT dht(DHT_PIN, DHT_TYPE);
-
-// ==========================================
-// KHỞI TẠO CẢM BIẾN
-// ==========================================
+static DHT dht(DHT_PIN, DHT_TYPE);
 
 void initSensors() {
+
     dht.begin();
+
+    analogReadResolution(12);
 }
 
-// ==========================================
-// ĐỌC DỮ LIỆU CẢM BIẾN
-// ==========================================
+bool readSensors(SensorData &sensorData) {
 
-bool readSensors(
-    float &temperature,
-    float &humidity,
-    int &light
-) {
-    // --------------------------------------
-    // DHT11
-    // --------------------------------------
+    float temperature = dht.readTemperature();
+    float humidity = dht.readHumidity();
 
-    temperature = dht.readTemperature();
-    humidity = dht.readHumidity();
+    if (isnan(temperature) || isnan(humidity)) {
 
-    // --------------------------------------
-    // LDR
-    // --------------------------------------
+        Serial.println("[ERROR] DHT11 read failed");
+
+        return false;
+    }
 
     int ldrRaw = analogRead(LDR_PIN);
 
     /*
-     * Module LDR thực tế:
+     * Temporary Lux conversion.
      *
-     * Tối hoàn toàn  -> RAW ~4095
-     * Phòng + đèn    -> RAW ~1850
-     * Flash          -> RAW ~0
-     *
-     * RAW càng thấp thì càng sáng.
-     *
-     * Quy đổi sang thang 0-5000 Lux.
+     * The final Lux formula will be determined later.
+     * Do not treat the raw ADC value itself as Lux.
      */
 
     float lux =
-        (1.0 - ((float)ldrRaw / 4095.0))
+        (1.0f - static_cast<float>(ldrRaw) / 4095.0f)
         * LIGHT_MAX_LUX;
 
-    if (lux < 0) {
-        lux = 0;
+    if (lux < 0.0f) {
+        lux = 0.0f;
     }
 
     if (lux > LIGHT_MAX_LUX) {
         lux = LIGHT_MAX_LUX;
     }
 
-    light = (int)lux;
-
-    // --------------------------------------
-    // KIỂM TRA DHT
-    // --------------------------------------
-
-    if (isnan(temperature) || isnan(humidity)) {
-        return false;
-    }
+    sensorData.temperature = temperature;
+    sensorData.humidity = humidity;
+    sensorData.light = static_cast<int>(lux);
 
     return true;
 }
