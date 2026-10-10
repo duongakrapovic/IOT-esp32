@@ -219,9 +219,7 @@ void mqttLoop() {
 // PUBLISH SENSOR DATA
 // ======================================================
 
-bool publishSensorData(
-    const SensorData &sensorData
-) {
+bool publishSensorData(const SensorData &sensorData) {
 
     if (!mqttClient.connected()) {
 
@@ -290,11 +288,7 @@ bool publishSensorData(
 // MQTT CALLBACK
 // ======================================================
 
-static void mqttCallback(
-    char* topic,
-    byte* payload,
-    unsigned int length
-) {
+static void mqttCallback(char* topic, byte* payload, unsigned int length) {
 
     Serial.print(
         "[MQTT] Received ["
@@ -432,9 +426,7 @@ static void mqttCallback(
 // PUBLISH DEVICE STATUS
 // ======================================================
 
-static bool publishDeviceStatus(
-    int deviceId
-) {
+static bool publishDeviceStatus(int deviceId) {
 
     int pin;
 

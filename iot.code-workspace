@@ -19,10 +19,6 @@
         {
             "name": "hardware",
             "path": "hardware"
-        },
-        {
-            "name": "inputAI",
-            "path": "inputAI"
         }
     ],
     "settings": {

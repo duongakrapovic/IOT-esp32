@@ -18,7 +18,7 @@
 //8883: MQTT có mã hóa bảo mật ( đã cấu hình chứng chỉ SSL/TLS).
 //(Secure Sockets Layer) &  (Transport Layer Security)
 
-#define MQTT_USERNAME "iot_project"
-#define MQTT_PASSWORD "12345678"
+#define MQTT_USERNAME "vuhaiduong"
+#define MQTT_PASSWORD "b23dccn233"
 
 #endif

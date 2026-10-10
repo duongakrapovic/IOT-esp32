@@ -3,7 +3,7 @@
 
 #include "config.h"
 #include "devices.h"
-
+//[DEVICE] Internal device state
 static bool deviceStates[3] = {
     false,
     false,
@@ -27,7 +27,7 @@ static int getDevicePin(int deviceId) {
             return -1;
     }
 }
-
+// [INIT] Configure LED GPIO pins
 void initDevices() {
 
     pinMode(LED1_PIN, OUTPUT);
@@ -42,7 +42,7 @@ void initDevices() {
     deviceStates[1] = false;
     deviceStates[2] = false;
 }
-
+// [DEVICE] Execute ON/OFF command
 bool setDeviceState(int deviceId, const char* action) {
 
     if (deviceId < 1 || deviceId > 3) {
@@ -90,7 +90,7 @@ bool setDeviceState(int deviceId, const char* action) {
 
     return true;
 }
-
+// [STATUS] Read the stored device state
 const char* getDeviceState(int deviceId) {
 
     if (deviceId < 1 || deviceId > 3) {

@@ -44,8 +44,19 @@
 // LDR
 // ==========================================
 
-// Temporary conversion range.
-// The final Lux formula will be replaced later.
-#define LIGHT_MAX_LUX 5000.0f
+// Điện áp cấp cho module LDR.
+#define LDR_VCC 3.3f
+
+// Điện trở cố định trong mạch phân áp.
+#define LDR_FIXED_RESISTANCE 10000.0f
+
+// Điện trở LDR tham khảo tại 10 Lux.
+#define LDR_RESISTANCE_AT_10_LUX 15000.0f
+
+// Hệ số đặc tuyến tham khảo của LDR.
+#define LDR_GAMMA 0.7f
+
+// Giới hạn Lux hiển thị.
+#define LIGHT_MAX_LUX 100000.0f
 
 #endif
