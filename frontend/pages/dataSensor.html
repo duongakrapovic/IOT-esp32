@@ -1,0 +1,53 @@
+<div class="page-header">
+    <h2 class="page-title">Lịch sử cảm biến</h2>
+</div>
+
+<div class="table-controls">
+    <div class="control-group">
+        <select class="control-select" id="sort-sensor">
+            <option value="time_desc">Mới nhất</option>
+            <option value="time_asc">Cũ nhất</option>
+            <option value="type_temp">Nhiệt độ</option>
+            <option value="type_humid">Độ ẩm</option>
+            <option value="type_light">Ánh sáng</option>
+        </select>
+        <div class="search-box">
+            <input type="text" class="control-search" id="search-sensor" placeholder="search . . .">
+            <button class="btn-search" onclick="applySensorFilter()">Tìm kiếm</button>
+        </div>
+    </div>
+</div>
+
+<div class="panel table-panel">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width: 80px;">id</th>
+                <th style="width: 250px;">tên cảm biến</th>
+                <th style="width: 200px;">giá trị</th>
+                <th>thời gian</th>
+            </tr>
+        </thead>
+        <tbody id="table-sensor-body"></tbody>
+    </table>
+</div>
+
+<!-- Thanh phân trang dưới cùng -->
+<div class="pagination-footer">
+    <div class="rows-per-page">
+        <span>Hiển thị:</span>
+        <select id="pagesize-sensor" onchange="changeSensorPageSize(this.value)">
+            <option value="10">10 dòng</option>
+            <option value="20">20 dòng</option>
+            <option value="50">50 dòng</option>
+        </select>
+    </div>
+    <div class="pagination-controls">
+        <button class="btn-page" onclick="prevSensorPage()">‹ Trước</button>
+        <span id="page-num-sensor" class="page-current">1</span>
+        <button class="btn-page" onclick="nextSensorPage()">Sau ›</button>
+    </div>
+    <div class="pagination-info" id="page-info-sensor">
+        Trang 1 / 1 (Tổng 0 bản ghi)
+    </div>
+</div>

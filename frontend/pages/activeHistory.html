@@ -1,0 +1,56 @@
+<div class="page-header">
+    <h2 class="page-title">Lịch sử điều khiển</h2>
+</div>
+
+<div class="table-controls">
+    <div class="control-group">
+        <select class="control-select" id="sort-history">
+            <option value="time_desc">Mới nhất</option>
+            <option value="time_asc">Cũ nhất</option>
+            <option value="dev_1">Đèn 1</option>
+            <option value="dev_2">Đèn 2</option>
+            <option value="dev_3">Đèn 3</option>
+            <option value="act_on">Hành động Bật</option>
+            <option value="act_off">Hành động Tắt</option>
+        </select>
+        <div class="search-box">
+            <input type="text" class="control-search" id="search-history" placeholder="search . . .">
+            <button class="btn-search" onclick="applyHistoryFilter()">Tìm kiếm</button>
+        </div>
+    </div>
+</div>
+
+<div class="panel table-panel">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width: 80px;">id</th>
+                <th style="width: 200px;">thiết bị</th>
+                <th style="width: 180px;">hành động</th>
+                <th style="width: 180px;">trạng thái</th>
+                <th>thời gian</th>
+            </tr>
+        </thead>
+        <tbody id="table-history-body"></tbody>
+    </table>
+</div>
+
+<!-- Thanh phân trang dưới cùng -->
+<div class="pagination-footer">
+    <div class="rows-per-page">
+        <span>Hiển thị:</span>
+        <select id="pagesize-history" onchange="changeHistoryPageSize(this.value)">
+            <option value="10">10 dòng</option>
+            <option value="20">20 dòng</option>
+            <option value="50">50 dòng</option>
+        </select>
+    </div>
+    <div class="pagination-controls">
+        <button class="btn-page" onclick="prevHistoryPage()">‹ Trước</button>
+        <span id="page-num-history" class="page-current">1</span>
+        <button class="btn-page" onclick="nextHistoryPage()">Sau ›</button>
+    </div>
+    <div class="pagination-info" id="page-info-history">
+        Trang 1 / 1 (Tổng 0 bản ghi)
+    </div>
+</div>

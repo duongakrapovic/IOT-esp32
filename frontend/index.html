@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IoT Dashboard - Vũ Hải Dương</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <nav>
+                <ul>
+                    <li class="active" onclick="switchPage('dashboard', this)"><a href="#">Dashboard</a></li>
+                    <li onclick="switchPage('dataSensor', this)"><a href="#">Data sensor</a></li>
+                    <li onclick="switchPage('activeHistory', this)"><a href="#">Active history</a></li>
+                    <li onclick="switchPage('profile', this)"><a href="#">profile</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content" id="app-content">
+            <!-- Nội dung các trang con sẽ được nạp động vào đây -->
+        </main>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

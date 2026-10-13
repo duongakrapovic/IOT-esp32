@@ -1,21 +1,545 @@
-/* =========================================================
-   IMPORT CSS
-   ========================================================= */
-
-@import url('./layout.css');
-@import url('./dashboard.css');
-@import url('./device.css');
-@import url('./table.css');
-@import url('./profile.css');
-
-
-/* =========================================================
-   RESET
-   ========================================================= */
-
 * {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
-    font-family: Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+    background-color: #0b111e;
+    color: #f1f5f9;
+    min-height: 100vh;
+}
+
+/* Container chính tạo khoảng cách đệm viền ngoài */
+.container {
+    display: flex;
+    min-height: 100vh;
+    padding: 16px;
+    gap: 16px;
+}
+
+/* Sidebar dạng thẻ bo viền lơ lửng (Khớp đúng ảnh Figma) */
+.sidebar {
+    width: 190px;
+    background-color: #162032;
+    border-radius: 12px;
+    padding: 35px 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
+}
+
+.sidebar nav ul {
+    list-style: none;
+}
+
+.sidebar nav li {
+    margin-bottom: 28px;
+}
+
+.sidebar nav li a {
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.sidebar nav li.active a,
+.sidebar nav li a:hover {
+    color: #34d399; /* Xanh lá highlight */
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.panel {
+    background-color: #172133;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+}
+
+.page-header {
+    margin-bottom: 18px;
+}
+
+.page-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: #f8fafc;
+}
+
+/* Header & Chart */
+.panel-header {
+    margin-bottom: 15px;
+}
+
+.header-title h1 {
+    font-size: 22px;
+    color: #f8fafc;
+    font-weight: 600;
+}
+
+.header-title .subtitle {
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 4px;
+}
+
+.chart-container {
+    position: relative;
+    height: 380px;
+    width: 100%;
+}
+
+/* ========================================================
+   HÀNG DƯỚI: ĐIỀU KHIỂN ĐÈN (TRÁI) & 3 THÔNG SỐ (PHẢI)
+   ======================================================== */
+.dashboard-bottom-row {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 16px;
+    align-items: stretch;
+}
+
+.dashboard-bottom-row .panel {
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.panel-title {
+    font-size: 16px;
+    margin-bottom: 16px;
+    color: #f8fafc;
+}
+
+.device-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.device-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #cbd5e1;
+    padding: 8px 16px;
+    border-radius: 4px;
+}
+
+.device-name {
+    color: #0f172a;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+/* Cột phải: Dàn 3 thẻ thành 1 hàng ngang */
+.sensor-stats-horizontal {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    height: 100%;
+    align-items: center;
+}
+
+.stat-card {
+    background-color: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+}
+
+.stat-card h3 {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+.stat-card p {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.stat-card.temp p { color: #f87171; }
+.stat-card.humid p { color: #38bdf8; }
+.stat-card.light p { color: #facc15; }
+
+/* Switch slider */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 54px;
+    height: 26px;
+}
+
+.switch input { opacity: 0; width: 0; height: 0; }
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #94a3b8;
+    transition: 0.3s;
+    border-radius: 26px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "OFF";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 7px;
+    color: #475569;
+    font-weight: bold;
+}
+
+input:checked + .slider { background-color: #22c55e; }
+input:checked + .slider:before {
+    transform: translateX(28px);
+    content: "ON";
+}
+
+/* ========================================================
+   PROFILE: KHUNG CHỮ NHẬT ĐỨNG Ở CHÍNH GIỮA (Khớp Figma)
+   ======================================================== */
+.profile-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 48px);
+    width: 100%;
+}
+
+.profile-card {
+    width: 480px;
+    background-color: #172133;
+    border-radius: 14px;
+    padding: 45px 35px;
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    margin: 0;
+}
+
+.profile-avatar {
+    width: 160px;
+    height: 160px;
+    background-color: #d1d5db;
+    border-radius: 50%;
+    margin: 0 auto 25px auto;
+}
+
+.profile-name {
+    font-size: 24px;
+    color: #f8fafc;
+    font-weight: 600;
+    margin-bottom: 30px;
+}
+
+.profile-details {
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.profile-details p {
+    color: #94a3b8;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.profile-details strong {
+    color: #f1f5f9;
+    font-weight: 500;
+}
+
+.profile-details a {
+    color: #38bdf8;
+    text-decoration: none;
+    word-break: break-all;
+}
+
+/* ========================================================
+   TABLE CONTROLS & PAGINATION FOOTER
+   ======================================================== */
+.table-controls {
+    display: flex;
+    margin-bottom: 14px;
+}
+
+.control-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.control-select, .control-search {
+    background-color: #172133;
+    border: 1px solid #334155;
+    color: #f8fafc;
+    padding: 8px 14px;
+    border-radius: 6px;
+    outline: none;
+    font-size: 14px;
+}
+
+.control-select { min-width: 160px; }
+.search-box { display: flex; gap: 8px; }
+.control-search { width: 240px; }
+
+.btn-search {
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.table-panel { padding: 0; overflow: hidden; }
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th, .data-table td {
+    padding: 12px 20px;
+    border-bottom: 1px solid #334155;
+    font-size: 14px;
+}
+
+.data-table th {
+    color: #94a3b8;
+    background-color: #131b2a;
+    font-weight: 600;
+}
+
+.data-table td { color: #f1f5f9; }
+
+.pagination-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 4px;
+    color: #94a3b8;
+    font-size: 14px;
+}
+
+.rows-per-page select {
+    background-color: #172133;
+    border: 1px solid #334155;
+    color: #f8fafc;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-left: 6px;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-page {
+    background-color: #172133;
+    border: 1px solid #334155;
+    color: #cbd5e1;
+    padding: 4px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.page-current { font-weight: bold; color: #34d399; }
+.pagination-info { font-size: 13px; }
+/* ========================================================
+   NÚT CHUYỂN LIGHT / DARK THEME (ĐÚNG THEO ẢNH MẪU)
+   ======================================================== */
+.theme-toggle-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+}
+
+.theme-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+    transition: color 0.2s ease;
+}
+
+.theme-text.active {
+    color: #f8fafc;
+}
+
+.theme-switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 24px;
+}
+
+.theme-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.theme-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #5c93f7; /* Màu xanh dương chuẩn ảnh mẫu */
+    transition: 0.3s;
+    border-radius: 24px;
+}
+
+.theme-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    right: 3px; /* Mặc định chế độ Dark: nút tròn nằm bên phải */
+    bottom: 3px;
+    background-color: #ffffff;
+    transition: 0.3s;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* Khi gạt sang Light (checkbox checked): Nút tròn trượt sang trái */
+.theme-switch input:checked + .theme-slider:before {
+    transform: translateX(-24px);
+}
+
+/* ========================================================
+   BỘ MÀU TƯƠNG PHẢN CHẾ ĐỘ SÁNG (LIGHT MODE)
+   ======================================================== */
+body.light-mode {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+/* Sidebar sáng */
+body.light-mode .sidebar {
+    background-color: #ffffff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+body.light-mode .sidebar nav li a {
+    color: #475569;
+}
+
+body.light-mode .sidebar nav li.active a,
+body.light-mode .sidebar nav li a:hover {
+    color: #16a34a;
+}
+
+/* Panel sáng */
+body.light-mode .panel {
+    background-color: #ffffff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+body.light-mode .header-title h1,
+body.light-mode .page-title,
+body.light-mode .panel-title,
+body.light-mode .profile-name {
+    color: #0f172a;
+}
+
+body.light-mode .header-title .subtitle {
+    color: #64748b;
+}
+
+/* Các thẻ thông số cảm biến */
+body.light-mode .stat-card {
+    background-color: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+body.light-mode .stat-card h3 {
+    color: #64748b;
+}
+
+/* Bảng điều khiển thiết bị */
+body.light-mode .device-item {
+    background-color: #e2e8f0;
+}
+
+body.light-mode .device-name {
+    color: #0f172a;
+}
+
+/* Bảng danh sách dữ liệu */
+body.light-mode .data-table th {
+    background-color: #f8fafc;
+    color: #334155;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+body.light-mode .data-table td {
+    color: #0f172a;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+/* Ô tìm kiếm & Dropdown */
+body.light-mode .control-select,
+body.light-mode .control-search {
+    background-color: #ffffff;
+    border-color: #cbd5e1;
+    color: #0f172a;
+}
+
+body.light-mode .pagination-footer {
+    color: #475569;
+}
+
+body.light-mode .rows-per-page select,
+body.light-mode .btn-page {
+    background-color: #ffffff;
+    border-color: #cbd5e1;
+    color: #0f172a;
+}
+
+/* Khung Profile */
+body.light-mode .profile-card {
+    background-color: #ffffff;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+body.light-mode .profile-details strong {
+    color: #0f172a;
+}
+
+body.light-mode .profile-details p {
+    color: #475569;
+}
+
+body.light-mode .theme-text.active {
+    color: #0f172a;
 }
