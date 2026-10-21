@@ -1,1 +1,43 @@
+# ==========================================
+# 1. HARDWARE (ESP32 / PlatformIO)
+# ==========================================
+hardware/.pio/
+hardware/.vscode/
+hardware/include/config_local.h
+
+# ==========================================
+# 2. BACKEND (Node.js / Express)
+# ==========================================
 backend/node_modules/
+backend/.env
+backend/logs/
+*.log
+
+# ==========================================
+# 3. FRONTEND (Web Dashboard)
+# ==========================================
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+
+# Chặn ảnh đại diện cá nhân (không push lên repo)
+**/avatar.*
+**/profile-pic.*
+assets/avatar.*
+
+# ==========================================
+# 4. DATABASE & DOCS (File tạm / Báo cáo)
+# ==========================================
+database/*.sqlite
+database/*.db
+*.docx
+~$*.docx
+*.tmp
+
+# ==========================================
+# 5. OS & IDE TEMPORARY FILES
+# ==========================================
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/settings.json

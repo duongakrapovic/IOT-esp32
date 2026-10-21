@@ -3,20 +3,43 @@
 </div>
 
 <div class="table-controls">
-    <div class="control-group">
-        <select class="control-select" id="sort-history">
-            <option value="time_desc">Mới nhất</option>
-            <option value="time_asc">Cũ nhất</option>
-            <option value="dev_1">Đèn 1</option>
-            <option value="dev_2">Đèn 2</option>
-            <option value="dev_3">Đèn 3</option>
-            <option value="act_on">Hành động Bật</option>
-            <option value="act_off">Hành động Tắt</option>
+    <div class="control-group" style="flex-wrap: wrap; gap: 10px;">
+        
+        <!-- Sắp xếp theo Thời gian -->
+        <select class="control-select" id="sort-history" onchange="applyHistoryFilter()">
+            <option value="time_desc">Thời gian: Mới nhất</option>
+            <option value="time_asc">Thời gian: Cũ nhất</option>
         </select>
+
+        <!-- Lọc Thiết bị -->
+        <select class="control-select" id="filter-device" onchange="applyHistoryFilter()">
+            <option value="">Tất cả thiết bị</option>
+            <option value="đèn 1">Đèn 1</option>
+            <option value="đèn 2">Đèn 2</option>
+            <option value="đèn 3">Đèn 3</option>
+        </select>
+
+        <!-- Lọc Hành động -->
+        <select class="control-select" id="filter-action" onchange="applyHistoryFilter()">
+            <option value="">Tất cả hành động</option>
+            <option value="bật">Bật</option>
+            <option value="tắt">Tắt</option>
+        </select>
+
+        <!-- Lọc Trạng thái: success, fail, pending -->
+        <select class="control-select" id="filter-status" onchange="applyHistoryFilter()">
+            <option value="">Tất cả trạng thái</option>
+            <option value="success">Success</option>
+            <option value="fail">Fail</option>
+            <option value="pending">Pending</option>
+        </select>
+
+        <!-- Tìm kiếm theo Thời gian -->
         <div class="search-box">
-            <input type="text" class="control-search" id="search-history" placeholder="search . . .">
+            <input type="text" class="control-search" id="search-history" placeholder="tìm kiếm theo thời gian">
             <button class="btn-search" onclick="applyHistoryFilter()">Tìm kiếm</button>
         </div>
+
     </div>
 </div>
 
@@ -24,10 +47,11 @@
     <table class="data-table">
         <thead>
             <tr>
-                <th style="width: 80px;">id</th>
-                <th style="width: 200px;">thiết bị</th>
-                <th style="width: 180px;">hành động</th>
-                <th style="width: 180px;">trạng thái</th>
+                <th>id</th>
+                <th>thiết bị</th>
+                <th>người dùng</th>
+                <th>hành động</th>
+                <th>trạng thái</th>
                 <th>thời gian</th>
             </tr>
         </thead>
@@ -35,7 +59,7 @@
     </table>
 </div>
 
-<!-- Thanh phân trang dưới cùng -->
+<!-- Thanh phân trang -->
 <div class="pagination-footer">
     <div class="rows-per-page">
         <span>Hiển thị:</span>

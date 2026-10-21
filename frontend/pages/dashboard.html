@@ -4,16 +4,16 @@
         <div class="header-title">
             <h1>Sensor Overview</h1>
             <p class="subtitle">Last 2 hours · 5-min intervals</p>
-        </div>
 
-        <!-- Nút gạt Light / Dark theo ảnh mẫu -->
-        <div class="theme-toggle-box">
-            <span class="theme-text" id="label-light">Light</span>
-            <label class="theme-switch">
-                <input type="checkbox" id="theme-checkbox" onchange="toggleTheme(this.checked)">
-                <span class="theme-slider"></span>
-            </label>
-            <span class="theme-text active" id="label-dark">Dark</span>
+            <!-- Nút gạt Light / Dark nằm ngay dưới dòng thời gian -->
+            <div class="theme-toggle-box">
+                <span class="theme-text" id="label-light">Light</span>
+                <label class="theme-switch">
+                    <input type="checkbox" id="theme-checkbox" onchange="toggleTheme(this.checked)">
+                    <span class="theme-slider"></span>
+                </label>
+                <span class="theme-text active" id="label-dark">Dark</span>
+            </div>
         </div>
     </header>
 
@@ -22,37 +22,59 @@
     </div>
 </div>
 
-<!-- Hàng dưới: Điều khiển 3 đèn (Trái) & 3 thông số cảm biến (Phải) -->
+<!-- Hàng dưới: Cùng 1 hàng (Trái: Điều khiển 3 đèn — Phải: Dàn hàng ngang 3 thông số) -->
 <div class="dashboard-bottom-row">
     <!-- Cột trái: Điều khiển 3 đèn -->
     <div class="panel device-panel">
         <h3 class="panel-title">Device Control</h3>
         <div class="device-list">
-            <div class="device-item">
-                <span class="device-name">đèn 1</span>
-                <label class="switch">
-                    <input type="checkbox" id="device-switch-1" checked onchange="toggleDevice(1, this.checked)">
-                    <span class="slider"></span>
-                </label>
+            
+            <!-- Đèn 1 -->
+            <div class="device-item" id="device-item-1">
+                <span class="device-name">Đèn 1</span>
+                <div class="device-right">
+                    <span class="device-spinner"></span>
+                    <img src="./css/bulb-off.svg" class="bulb-icon bulb-off" width="28" height="28" alt="Đèn tắt">
+                    <img src="./css/bulb-on.svg" class="bulb-icon bulb-on" width="28" height="28" alt="Đèn bật">
+                    <label class="switch">
+                        <input type="checkbox" id="device-switch-1" checked onchange="toggleDevice(1, this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
             </div>
-            <div class="device-item">
-                <span class="device-name">đèn 2</span>
-                <label class="switch">
-                    <input type="checkbox" id="device-switch-2" checked onchange="toggleDevice(2, this.checked)">
-                    <span class="slider"></span>
-                </label>
+
+            <!-- Đèn 2 -->
+            <div class="device-item" id="device-item-2">
+                <span class="device-name">Đèn 2</span>
+                <div class="device-right">
+                    <span class="device-spinner"></span>
+                    <img src="./css/bulb-off.svg" class="bulb-icon bulb-off" width="28" height="28" alt="Đèn tắt">
+                    <img src="./css/bulb-on.svg" class="bulb-icon bulb-on" width="28" height="28" alt="Đèn bật">
+                    <label class="switch">
+                        <input type="checkbox" id="device-switch-2" checked onchange="toggleDevice(2, this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
             </div>
-            <div class="device-item">
-                <span class="device-name">đèn 3</span>
-                <label class="switch">
-                    <input type="checkbox" id="device-switch-3" checked onchange="toggleDevice(3, this.checked)">
-                    <span class="slider"></span>
-                </label>
+
+            <!-- Đèn 3 -->
+            <div class="device-item" id="device-item-3">
+                <span class="device-name">Đèn 3</span>
+                <div class="device-right">
+                    <span class="device-spinner"></span>
+                    <img src="./css/bulb-off.svg" class="bulb-icon bulb-off" width="28" height="28" alt="Đèn tắt">
+                    <img src="./css/bulb-on.svg" class="bulb-icon bulb-on" width="28" height="28" alt="Đèn bật">
+                    <label class="switch">
+                        <input type="checkbox" id="device-switch-3" checked onchange="toggleDevice(3, this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
             </div>
+
         </div>
     </div>
 
-    <!-- Cột phải: Dàn hàng ngang 3 thông số cảm biến -->
+    <!-- Cột phải: Dàn 1 hàng ngang 3 thông số cảm biến -->
     <div class="panel stats-panel">
         <h3 class="panel-title">Sensor Values</h3>
         <div class="sensor-stats-horizontal">

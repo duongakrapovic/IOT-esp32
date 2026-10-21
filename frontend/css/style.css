@@ -1,111 +1,181 @@
+/* 
+   [TIM-BIEN]      : Bảng biến màu (Đổi màu toàn trang, Dark/Light Mode)
+   [TIM-LAYOUT]    : Khung bao ngoài, chia cột tổng thể (Container, Main, Panel)
+   [TIM-SIDEBAR]   : Thanh menu điều hướng bên trái
+   [TIM-CHART]     : Khung vẽ biểu đồ Chart.js và tiêu đề trang
+   [TIM-CONGTAC]   : Công tắc gạt ON/OFF điều khiển 3 đèn
+   [TIM-THONGSO]   : 3 thẻ hiển thị Nhiệt độ, Độ ẩm, Ánh sáng
+   [TIM-THEME]     : Nút tròn gạt chuyển đổi giao diện Sáng / Tối
+   [TIM-BANG]      : Bảng dữ liệu (Data Sensor, Active History) & chia tỷ lệ cột
+   [TIM-TIMKIEM]   : Ô tìm kiếm, bộ lọc Dropdown, nút tìm kiếm
+   [TIM-PHANTRANG] : Thanh phân trang, chọn số dòng, nút chuyển trang
+   [TIM-PROFILE]   : Khung thẻ thông tin cá nhân sinh viên 
+
+   [TIM-BIEN] 1. BẢNG BIẾN MÀU DÙNG CHUNG (CSS VARIABLES)
+   - Chức năng: Tập trung toàn bộ mã màu của website tại một nơi duy nhất.
+   - Khi muốn đổi màu: Chỉ cần thay mã Hex (#...) tại đây, toàn bộ giao diện tự cập nhật. */
+:root {
+    /* --- BẢNG MÀU GIAO DIỆN TỐI --- */
+    --bg-app: #0b111e;              /* Màu nền toàn bộ trang web */
+    --bg-sidebar: #162032;          /* Màu nền thanh menu bên trái */
+    --bg-panel: #172133;            /* Màu nền các khung chứa khối nội dung */
+    --bg-table-header: #131b2a;     /* Màu nền dòng tiêu đề bảng (th) */
+    --bg-card: #0f172a;             /* Màu nền 3 thẻ thông số cảm biến */
+    --bg-input: #172133;            /* Màu nền ô nhập tìm kiếm, dropdown, nút phân trang */
+    --bg-device-item: #cbd5e1;      /* Màu nền thanh chứa từng nút bật đèn */
+
+    --text-main: #f8fafc;           /* Màu chữ tiêu đề chính (trắng sáng) */
+    --text-body: #f1f5f9;           /* Màu chữ văn bản nội dung */
+    --text-muted: #94a3b8;          /* Màu chữ phụ, xám nhạt (nhãn, tiêu đề cột bảng) */
+    --text-sub: #64748b;            /* Màu chữ chú thích nhỏ (subtitle, thời gian) */
+    --text-dark: #0f172a;           /* Màu chữ đen đậm dùng trên nền sáng */
+
+    --border-color: #334155;        /* Đường kẻ viền ngăn cách (bảng, thẻ) */
+    --accent-green: #34d399;        /* Màu xanh lá điểm nhấn (menu active, số trang hiện tại) */
+    --btn-primary: #2563eb;         /* Màu xanh dương của nút Tìm kiếm */
+    --btn-primary-hover: #1d4ed8;   /* Màu nút Tìm kiếm khi rê chuột vào */
+
+    --slider-bg: #94a3b8;           /* Màu nền công tắc đèn khi trạng thái TẮT (OFF) */
+    --slider-active: #22c55e;       /* Màu nền công tắc đèn khi trạng thái BẬT (ON) */
+    --theme-toggle-bg: #5c93f7;     /* Màu nền thanh trượt chuyển Theme Light/Dark */
+
+    --shadow-sidebar: 0 4px 15px rgba(0, 0, 0, 0.3);  /* Hiệu ứng đổ bóng khối giao diện tối */
+    --shadow-card: 0 8px 25px rgba(0, 0, 0, 0.4);     /* Đổ bóng thẻ thông tin cá nhân */
+    --select-arrow: url("./arrow-white.svg");         /* Icon mũi tên trắng cho ô chọn */
+}
+
+body.light-mode {
+    /* --- BẢNG MÀU GIAO DIỆN SÁNG --- */
+    --bg-app: #f1f5f9;              /* Nền web đổi sang màu xám sáng */
+    --bg-sidebar: #ffffff;          /* Nền menu bên trái đổi sang trắng tinh */
+    --bg-panel: #ffffff;            /* Nền các khối nội dung đổi sang trắng tinh */
+    --bg-table-header: #f8fafc;     /* Nền tiêu đề bảng sáng */
+    --bg-card: #f8fafc;             /* Nền 3 thẻ cảm biến sáng */
+    --bg-input: #ffffff;            /* Nền ô nhập liệu sáng */
+    --bg-device-item: #e2e8f0;      /* Nền thanh thiết bị xám sáng */
+
+    --text-main: #0f172a;           /* Chữ đổi sang màu đen sẫm */
+    --text-body: #0f172a;           /* Chữ nội dung đổi sang đen */
+    --text-muted: #475569;          /* Chữ phụ màu xám đậm */
+    --text-sub: #64748b;
+
+    --border-color: #e2e8f0;        /* Viền kẻ màu xám nhạt */
+    --accent-green: #16a34a;        /* Xanh lá đậm hơn để tương phản tốt trên nền trắng */
+
+    --shadow-sidebar: 0 4px 15px rgba(0, 0, 0, 0.08); /* Đổ bóng nhẹ nhàng cho nền sáng */
+    --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.08);
+    --select-arrow: url("./arrow-black.svg");         /* Đổi sang icon mũi tên đen */
+}
+
+
+/* 
+   [TIM-LAYOUT] 2. RESET TRÌNH DUYỆT & KHUNG BỐ CỤC CHUNG
+   - Chức năng: Đưa lề mặc định về 0 và dựng khung chứa linh hoạt (Flexbox).*/
 * {
-    box-sizing: border-box;
+    box-sizing: border-box;/* Đảm bảo padding/border không làm tăng kích thước phần tử */
     margin: 0;
     padding: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 body {
-    background-color: #0b111e;
-    color: #f1f5f9;
+    background-color: var(--bg-app);
+    color: var(--text-body);
     min-height: 100vh;
+    transition: background-color 0.2s ease, color 0.2s ease; /* Chuyển màu êm khi đổi theme */
 }
 
-/* Container chính tạo khoảng cách đệm viền ngoài */
+/* Khung bọc toàn màn hình: Đặt Sidebar bên trái, nội dung bên phải */
 .container {
     display: flex;
     min-height: 100vh;
     padding: 16px;
-    gap: 16px;
+    gap: 16px;                      /* Khoảng cách giữa Menu và Vùng nội dung chính */
 }
 
-/* Sidebar dạng thẻ bo viền lơ lửng (Khớp đúng ảnh Figma) */
+/* Khu vực hiển thị nội dung các trang con */
+.main-content {
+    flex: 1;                        /* Tự động dãn kín khoảng trống còn lại bên phải */
+    overflow-y: auto;               /* Tự động xuất hiện thanh cuộn dọc khi nội dung quá dài */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Lớp vỏ khung bo góc chứa từng phần giao diện */
+.panel {
+    background-color: var(--bg-panel);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-sidebar);
+    transition: background-color 0.2s ease;
+}
+/*  
+   [TIM-SIDEBAR] 3. THANH ĐIỀU HƯỚNG TRÁI (SIDEBAR NAVIGATION)
+   - Chức năng: Menu cố định 190px chuyển qua lại giữa các trang Dashboard, Bảng, Profile.*/
 .sidebar {
     width: 190px;
-    background-color: #162032;
+    background-color: var(--bg-sidebar);
     border-radius: 12px;
     padding: 35px 20px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    flex-shrink: 0;
+    box-shadow: var(--shadow-sidebar);
+    flex-shrink: 0;                 /* Cố định bề rộng, không bị nội dung bên phải ép nhỏ */
 }
 
-.sidebar nav ul {
-    list-style: none;
-}
-
-.sidebar nav li {
-    margin-bottom: 28px;
-}
+.sidebar nav ul { list-style: none; }
+.sidebar nav li { margin-bottom: 28px; }
 
 .sidebar nav li a {
-    color: #94a3b8;
+    color: var(--text-muted);
     text-decoration: none;
     font-size: 15px;
     font-weight: 500;
     transition: color 0.2s;
 }
 
+/* Đổi màu xanh lá khi di chuột vào hoặc trang đang được kích hoạt */
 .sidebar nav li.active a,
 .sidebar nav li a:hover {
-    color: #34d399; /* Xanh lá highlight */
+    color: var(--accent-green);
 }
-
-/* Main Content */
-.main-content {
-    flex: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-}
-
-.panel {
-    background-color: #172133;
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 16px;
-}
-
-.page-header {
-    margin-bottom: 18px;
-}
-
-.page-title {
-    font-size: 22px;
-    font-weight: 600;
-    color: #f8fafc;
-}
-
-/* Header & Chart */
+/*  
+   [TIM-CHART] 4. TRANG DASHBOARD & BIỂU ĐỒ CẢM BIẾN
+   - Chức năng: Khung chứa biểu đồ Chart.js và tiêu đề trên cùng.*/
 .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
     margin-bottom: 15px;
 }
 
-.header-title h1 {
-    font-size: 22px;
-    color: #f8fafc;
-    font-weight: 600;
+.header-title h1, .page-title, .panel-title, .profile-name {
+    color: var(--text-main);
 }
 
+.header-title h1 { font-size: 22px; font-weight: 600; }
+.page-title { font-size: 22px; font-weight: 600; margin-bottom: 18px; }
+.panel-title { font-size: 16px; margin-bottom: 16px; }
+
+/* Dòng chữ nhỏ "Last 2 hours · 5-min intervals" */
 .header-title .subtitle {
     font-size: 13px;
-    color: #64748b;
+    color: var(--text-sub);
     margin-top: 4px;
 }
 
+/* Vùng chứa thẻ canvas biểu đồ cảm biến */
 .chart-container {
     position: relative;
-    height: 380px;
+    height: 380px;                  /* Chiều cao cố định chuẩn cho thư viện vẽ biểu đồ */
     width: 100%;
 }
 
-/* ========================================================
-   HÀNG DƯỚI: ĐIỀU KHIỂN ĐÈN (TRÁI) & 3 THÔNG SỐ (PHẢI)
-   ======================================================== */
+/* Bố cục hàng dưới Dashboard: Cột trái 320px (3 Đèn), Cột phải tự dãn (3 Thẻ thông số) */
 .dashboard-bottom-row {
     display: grid;
     grid-template-columns: 320px 1fr;
     gap: 16px;
-    align-items: stretch;
+    align-items: stretch;           /* Kéo 2 cột bên dưới cao bằng nhau tuyệt đối */
 }
 
 .dashboard-bottom-row .panel {
@@ -114,46 +184,100 @@ body {
     flex-direction: column;
     justify-content: center;
 }
-
-.panel-title {
-    font-size: 16px;
-    margin-bottom: 16px;
-    color: #f8fafc;
-}
-
-.device-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
+/*  
+   [TIM-CONGTAC] KHỐI ĐIỀU KHIỂN BẬT / TẮT 3 ĐÈN (CỘT TRÁI HÀNG DƯỚI)
+   - Chức năng: Danh sách thiết bị và nút gạt công tắc trượt ON / OFF thuần CSS.*/
+.device-list { display: flex; flex-direction: column; gap: 10px; }
 
 .device-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background-color: #cbd5e1;
+    background-color: var(--bg-device-item);
     padding: 8px 16px;
     border-radius: 4px;
 }
 
-.device-name {
-    color: #0f172a;
-    font-size: 15px;
-    font-weight: 600;
+.device-name { 
+    color: var(--text-dark); 
+    font-size: 15px; 
+    font-weight: 600; 
 }
 
-/* Cột phải: Dàn 3 thẻ thành 1 hàng ngang */
+/* Khung bao ngoài nút công tắc gạt */
+.switch { position: relative; display: inline-block; width: 54px; height: 26px; }
+.switch input { opacity: 0; width: 0; height: 0; } /* Ẩn checkbox mặc định */
+
+/* Thanh ray trượt */
+.slider {
+    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+    background-color: var(--slider-bg);
+    transition: 0.3s;
+    border-radius: 26px;
+}
+
+/* Chấm tròn di chuyển, mặc định OFF */
+.slider:before {
+    position: absolute; content: "OFF"; height: 20px; width: 20px; left: 3px; bottom: 3px;
+    background-color: #ffffff; transition: 0.3s; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 7px; color: #475569; font-weight: bold;
+}
+
+/* Khi người dùng gạt BẬT: Đổi nền sang xanh lá, chấm tròn trượt sang phải hiện chữ ON */
+input:checked + .slider { background-color: var(--slider-active); }
+input:checked + .slider:before { transform: translateX(28px); content: "ON"; }
+
+/*==============================================================================================*/
+/*bóng đèn*/
+.device-right { display: flex; align-items: center; gap: 14px; }
+.bulb-icon { transition: all 0.3s ease; }
+
+/* 1. Mặc định (khi tắt): Hiện đèn xám, Ẩn đèn vàng */
+.device-item .bulb-off { display: block; }
+.device-item .bulb-on { display: none; }
+
+/* 2. Khi bật công tắc: Ẩn đèn xám, Hiện đèn vàng kèm hiệu ứng sáng rực */
+.device-item:has(input:checked) .bulb-off { display: none; }
+.device-item:has(input:checked) .bulb-on { 
+    display: block;
+    /* Dùng 2 lớp bóng đổ chồng lên nhau để tạo quầng sáng chói */
+    filter: drop-shadow(0 0 6px rgba(255, 222, 33, 0.9)) drop-shadow(0 0 18px rgba(255, 222, 33, 0.6)); 
+    transform: scale(1.1); /* Phóng to lên một chút */
+}
+/* Vòng xoay spinner ở vị trí bóng đèn (mặc định ẩn) */
+.device-spinner {
+    display: none;
+    width: 20px;
+    height: 20px;
+    border: 2.5px solid rgba(250, 204, 21, 0.25);
+    border-top-color: #facc15; /* Khuyết vàng xoay tròn giống pending */
+    border-radius: 50%;
+    animation: spin 0.5s linear infinite;
+    margin: 4px; /* Giữ kích thước cân đối với bóng đèn */
+}
+
+/* Khi đang có trạng thái loading (trong đúng 1 giây): ẩn bóng đèn, hiện vòng xoay */
+.device-item.loading .bulb-icon {
+    display: none !important;
+}
+
+.device-item.loading .device-spinner {
+    display: inline-block !important;
+}
+/*  [TIM-THONGSO] 3 THẺ HIỂN THỊ THÔNG SỐ CẢM BIẾN (CỘT PHẢI HÀNG DƯỚI)
+   - Chức năng: Chia đều 3 cột ngang chứa Nhiệt độ, Độ ẩm và Ánh sáng.*/
 .sensor-stats-horizontal {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, 1fr); /* Tự động chia thành 3 phần bằng nhau */
     gap: 16px;
     height: 100%;
     align-items: center;
 }
 
 .stat-card {
-    background-color: #0f172a;
-    border: 1px solid #334155;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 18px 20px;
     display: flex;
@@ -162,384 +286,292 @@ body {
     height: 100%;
 }
 
-.stat-card h3 {
-    font-size: 12px;
-    color: #94a3b8;
-    margin-bottom: 8px;
-    letter-spacing: 0.5px;
+.stat-card h3 { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+.stat-card p { font-size: 24px; font-weight: bold; }
+
+/* Mã màu riêng cho số liệu từng loại cảm biến */
+.stat-card.temp p { color: #f87171; }   /* Nhiệt độ: Đỏ cam */
+.stat-card.humid p { color: #38bdf8; }  /* Độ ẩm: Xanh da trời */
+.stat-card.light p { color: #facc15; }  /* Ánh sáng: Vàng nắng */
+
+
+/*  [TIM-THEME] 5. NÚT CHUYỂN GIAO DIỆN SÁNG / TỐI
+    - Chức năng: Đặt ngay dưới dòng subtitle thời gian, gạt qua lại giữa 2 chế độ màu.*/
+.theme-toggle-box { 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    user-select: none; 
+    margin-top: 10px;               /* Khoảng cách đệm với dòng chữ thời gian bên trên */
 }
 
-.stat-card p {
-    font-size: 24px;
-    font-weight: bold;
-}
+.theme-text { font-size: 13px; font-weight: 600; color: var(--text-sub); }
+.theme-text.active { color: var(--text-main); } /* Sáng màu khi đang ở chế độ đó */
 
-.stat-card.temp p { color: #f87171; }
-.stat-card.humid p { color: #38bdf8; }
-.stat-card.light p { color: #facc15; }
+.theme-switch { position: relative; display: inline-block; width: 48px; height: 24px; }
+.theme-switch input { opacity: 0; width: 0; height: 0; }
 
-/* Switch slider */
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 54px;
-    height: 26px;
-}
-
-.switch input { opacity: 0; width: 0; height: 0; }
-
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: #94a3b8;
+.theme-slider {
+    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+    background-color: var(--theme-toggle-bg);
     transition: 0.3s;
-    border-radius: 26px;
+    border-radius: 24px;
 }
 
-.slider:before {
-    position: absolute;
-    content: "OFF";
-    height: 20px;
-    width: 20px;
-    left: 3px;
-    bottom: 3px;
-    background-color: white;
-    transition: 0.3s;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 7px;
-    color: #475569;
-    font-weight: bold;
+/* Chấm tròn trắng: Mặc định nằm bên phải (Chế độ Dark) */
+.theme-slider:before {
+    position: absolute; content: ""; height: 18px; width: 18px; right: 3px; bottom: 3px;
+    background-color: #ffffff; transition: 0.3s; border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 
-input:checked + .slider { background-color: #22c55e; }
-input:checked + .slider:before {
-    transform: translateX(28px);
-    content: "ON";
-}
-
+/* Khi bấm chuyển sang Light: Chấm tròn trượt sang trái */
+.theme-switch input:checked + .theme-slider:before { transform: translateX(-24px); }
+  
+/*  [TIM-BANG] 6. BẢNG DỮ LIỆU CỐ ĐỊNH TỶ LỆ (DATA TABLE - CHỐNG LỆCH CỘT 100%)
+   - Chức năng: Căn chỉnh dữ liệu cho 2 bảng: Data Sensor và Active History.
+   - Thuật toán: table-layout: fixed kết hợp :has() chia tỷ lệ phần trăm chính xác.
+     */
 /* ========================================================
-   PROFILE: KHUNG CHỮ NHẬT ĐỨNG Ở CHÍNH GIỮA (Khớp Figma)
+   TRẠNG THÁI ACTIVE HISTORY (SUCCESS, FAIL, PENDING)
    ======================================================== */
-.profile-wrapper {
-    display: flex;
-    justify-content: center;
+.status-badge {
+    display: inline-flex;
     align-items: center;
-    min-height: calc(100vh - 48px);
-    width: 100%;
-}
-
-.profile-card {
-    width: 480px;
-    background-color: #172133;
-    border-radius: 14px;
-    padding: 45px 35px;
-    text-align: center;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-    margin: 0;
-}
-
-.profile-avatar {
-    width: 160px;
-    height: 160px;
-    background-color: #d1d5db;
-    border-radius: 50%;
-    margin: 0 auto 25px auto;
-}
-
-.profile-name {
-    font-size: 24px;
-    color: #f8fafc;
-    font-weight: 600;
-    margin-bottom: 30px;
-}
-
-.profile-details {
-    text-align: left;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.profile-details p {
-    color: #94a3b8;
-    font-size: 15px;
-    line-height: 1.5;
-}
-
-.profile-details strong {
-    color: #f1f5f9;
+    gap: 6px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 13px;
     font-weight: 500;
 }
 
-.profile-details a {
-    color: #38bdf8;
-    text-decoration: none;
-    word-break: break-all;
+/* 1. Trạng thái Thành công (Success) - Màu xanh lá */
+.status-badge.success {
+    color: #34d399;
+    background-color: rgba(52, 211, 153, 0.12);
 }
 
-/* ========================================================
-   TABLE CONTROLS & PAGINATION FOOTER
-   ======================================================== */
-.table-controls {
-    display: flex;
-    margin-bottom: 14px;
+/* 2. Trạng thái Thất bại (Fail) - Màu đỏ */
+.status-badge.fail {
+    color: #f87171;
+    background-color: rgba(248, 113, 113, 0.12);
 }
 
-.control-group {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+/* 3. Trạng thái Đang chờ (Pending) - Màu vàng */
+.status-badge.pending {
+    color: #facc15;
+    background-color: rgba(250, 204, 21, 0.12);
 }
+
+/* Vòng xoay tròn xoay 0.5 giây / 1 vòng */
+.status-spinner {
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(250, 204, 21, 0.3);
+    border-top-color: #facc15; /* Phần khuyết xoay màu vàng */
+    border-radius: 50%;
+    animation: spin 0.5s linear infinite; /* Đúng thời gian nửa giây */
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.table-panel { padding: 0; overflow: hidden; }
+
+.data-table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    table-layout: fixed;            /* Bắt buộc trình duyệt chia cột theo tỷ lệ % bên dưới */
+}
+
+.data-table th, .data-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 14px;
+    text-align: left;
+    white-space: nowrap;            /* Chặn tự động xuống dòng làm vỡ hàng */
+    overflow: hidden;               /* Ẩn phần chữ bị thừa */
+    text-overflow: ellipsis;        /* Thay thế chữ dài bằng dấu 3 chấm (...) */
+}
+
+.data-table th { 
+    color: var(--text-muted); 
+    background-color: var(--bg-table-header); 
+    font-weight: 600; 
+}
+
+.data-table td { color: var(--text-body); }
+
+/* --- TỶ LỆ 4 CỘT DÀNH CHO TRANG DATA SENSOR --- */
+.table-panel:has(#table-sensor-body) th:nth-child(1), 
+#table-sensor-body td:nth-child(1) { width: 12%; } /* Cột ID */
+
+.table-panel:has(#table-sensor-body) th:nth-child(2), 
+#table-sensor-body td:nth-child(2) { width: 28%; } /* Cột Tên cảm biến */
+
+.table-panel:has(#table-sensor-body) th:nth-child(3), 
+#table-sensor-body td:nth-child(3) { width: 25%; } /* Cột Giá trị */
+
+.table-panel:has(#table-sensor-body) th:nth-child(4), 
+#table-sensor-body td:nth-child(4) { width: 35%; } /* Cột Thời gian */
+
+/* --- TỶ LỆ 6 CỘT DÀNH CHO TRANG ACTIVE HISTORY --- */
+.table-panel:has(#table-history-body) th:nth-child(1), 
+#table-history-body td:nth-child(1) { width: 8%; }  /* Cột ID */
+
+.table-panel:has(#table-history-body) th:nth-child(2), 
+#table-history-body td:nth-child(2) { width: 18%; } /* Cột Thiết bị */
+
+.table-panel:has(#table-history-body) th:nth-child(3), 
+#table-history-body td:nth-child(3) { width: 16%; } /* Cột Người dùng */
+
+.table-panel:has(#table-history-body) th:nth-child(4), 
+#table-history-body td:nth-child(4) { width: 16%; } /* Cột Hành động */
+
+.table-panel:has(#table-history-body) th:nth-child(5), 
+#table-history-body td:nth-child(5) { width: 17%; } /* Cột Trạng thái */
+
+.table-panel:has(#table-history-body) th:nth-child(6), 
+#table-history-body td:nth-child(6) { width: 25%; } /* Cột Thời gian */
+
+/* [TIM-TIMKIEM] THANH CÔNG CỤ TÌM KIẾM & BỘ LỌC BẢNG (TABLE CONTROLS)
+   - Chức năng: Ô chọn sắp xếp (dropdown), ô nhập từ khóa và nút tìm kiếm.*/
+.table-controls { display: flex; margin-bottom: 14px; }
+.control-group { display: flex; align-items: center; gap: 12px; }
 
 .control-select, .control-search {
-    background-color: #172133;
-    border: 1px solid #334155;
-    color: #f8fafc;
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
     padding: 8px 14px;
     border-radius: 6px;
     outline: none;
     font-size: 14px;
 }
 
-.control-select { min-width: 160px; }
+/* Ô chọn Dropdown: Ẩn mũi tên mặc định, chèn mũi tên SVG tự đổi màu theo biến */
+.control-select {
+    min-width: 160px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    
+    background-image: var(--select-arrow);
+    background-repeat: no-repeat;
+    background-position: right 14px center; /* Căn lề phải 14px và ở giữa theo chiều dọc */
+    padding-right: 36px;                    /* Chừa chỗ để chữ không đè lên mũi tên */
+}
+
 .search-box { display: flex; gap: 8px; }
 .control-search { width: 240px; }
 
+/* Nút bấm Tìm kiếm */
 .btn-search {
-    background-color: #2563eb;
-    color: white;
+    background-color: var(--btn-primary);
+    color: #ffffff;
     border: none;
     padding: 8px 16px;
     border-radius: 6px;
     cursor: pointer;
     font-size: 14px;
+    font-weight: 500;
 }
+.btn-search:hover { background-color: var(--btn-primary-hover); }
 
-.table-panel { padding: 0; overflow: hidden; }
-
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.data-table th, .data-table td {
-    padding: 12px 20px;
-    border-bottom: 1px solid #334155;
-    font-size: 14px;
-}
-
-.data-table th {
-    color: #94a3b8;
-    background-color: #131b2a;
-    font-weight: 600;
-}
-
-.data-table td { color: #f1f5f9; }
-
+/*  [TIM-PHANTRANG] THANH PHÂN TRANG CUỐI BẢNG (PAGINATION FOOTER)
+   - Chức năng: Chọn số dòng/trang, hiển thị số trang hiện tại và các nút lùi/tiến.*/
 .pagination-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 14px 4px;
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 14px;
 }
 
-.rows-per-page select {
-    background-color: #172133;
-    border: 1px solid #334155;
-    color: #f8fafc;
-    padding: 4px 8px;
-    border-radius: 4px;
-    margin-left: 6px;
-}
-
-.pagination-controls {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.btn-page {
-    background-color: #172133;
-    border: 1px solid #334155;
-    color: #cbd5e1;
-    padding: 4px 12px;
+.rows-per-page select, .btn-page {
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    padding: 4px 10px;
     border-radius: 4px;
     cursor: pointer;
 }
 
-.page-current { font-weight: bold; color: #34d399; }
+.page-current { 
+    font-weight: bold; 
+    color: var(--accent-green);     /* Số trang hiện tại tô màu xanh lá */
+}
+
 .pagination-info { font-size: 13px; }
-/* ========================================================
-   NÚT CHUYỂN LIGHT / DARK THEME (ĐÚNG THEO ẢNH MẪU)
-   ======================================================== */
-.theme-toggle-box {
+
+
+/*  [TIM-PROFILE] 7. TRANG THÔNG TIN CÁ NHÂN (PROFILE CARD)
+   - Chức năng: Căn thẻ hồ sơ sinh viên ra chính giữa màn hình (Flexbox căn tâm).*/
+.profile-wrapper {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    user-select: none;
+    justify-content: center;        /* Căn giữa theo chiều ngang */
+    align-items: center;            /* Căn giữa theo chiều dọc */
+    min-height: calc(100vh - 48px);
+    width: 100%;
 }
 
-.theme-text {
-    font-size: 13px;
-    font-weight: 600;
-    color: #64748b;
-    transition: color 0.2s ease;
+.profile-card {
+    width: 480px;                   /* Độ rộng tiêu chuẩn khớp bản thiết kế Figma */
+    background-color: var(--bg-panel);
+    border-radius: 14px;
+    padding: 45px 35px;
+    text-align: center;
+    box-shadow: var(--shadow-card);
+    margin: 0;
 }
 
-.theme-text.active {
-    color: #f8fafc;
+/* Ảnh đại diện hình tròn */
+.profile-avatar {
+    width: 160px;
+    height: 160px;
+    background-color: #d1d5db;
+    border-radius: 50%;             /* Bo tròn 50% tạo thành hình tròn */
+    margin: 0 auto 25px auto;
 }
 
-.theme-switch {
-    position: relative;
-    display: inline-block;
-    width: 48px;
-    height: 24px;
+.profile-name { font-size: 24px; font-weight: 600; margin-bottom: 30px; }
+
+.profile-details { 
+    text-align: left; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 16px; 
 }
 
-.theme-switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
+.profile-details p { color: var(--text-muted); font-size: 15px; line-height: 1.5; }
+.profile-details strong { color: var(--text-main); font-weight: 500; }
 
-.theme-slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: #5c93f7; /* Màu xanh dương chuẩn ảnh mẫu */
-    transition: 0.3s;
-    border-radius: 24px;
+/* Định dạng link Github, Figma, Postman (Tự ngắt dòng và không tràn khung) */
+.profile-details a { 
+    color: #38bdf8; 
+    text-decoration: none; 
+    word-break: break-all;          /* Tự bẻ xuống dòng nếu đường dẫn URL quá dài */
 }
-
-.theme-slider:before {
-    position: absolute;
-    content: "";
-    height: 18px;
-    width: 18px;
-    right: 3px; /* Mặc định chế độ Dark: nút tròn nằm bên phải */
-    bottom: 3px;
-    background-color: #ffffff;
-    transition: 0.3s;
+.profile-avatar {
+    width: 160px;
+    height: 160px;
+    background-color: #d1d5db;
     border-radius: 50%;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    margin: 0 auto 25px auto;
+    overflow: hidden; /* Cắt phần ảnh thừa ngoài vòng tròn */
 }
 
-/* Khi gạt sang Light (checkbox checked): Nút tròn trượt sang trái */
-.theme-switch input:checked + .theme-slider:before {
-    transform: translateX(-24px);
-}
-
-/* ========================================================
-   BỘ MÀU TƯƠNG PHẢN CHẾ ĐỘ SÁNG (LIGHT MODE)
-   ======================================================== */
-body.light-mode {
-    background-color: #f1f5f9;
-    color: #0f172a;
-}
-
-/* Sidebar sáng */
-body.light-mode .sidebar {
-    background-color: #ffffff;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-}
-
-body.light-mode .sidebar nav li a {
-    color: #475569;
-}
-
-body.light-mode .sidebar nav li.active a,
-body.light-mode .sidebar nav li a:hover {
-    color: #16a34a;
-}
-
-/* Panel sáng */
-body.light-mode .panel {
-    background-color: #ffffff;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
-
-body.light-mode .header-title h1,
-body.light-mode .page-title,
-body.light-mode .panel-title,
-body.light-mode .profile-name {
-    color: #0f172a;
-}
-
-body.light-mode .header-title .subtitle {
-    color: #64748b;
-}
-
-/* Các thẻ thông số cảm biến */
-body.light-mode .stat-card {
-    background-color: #f8fafc;
-    border-color: #e2e8f0;
-}
-
-body.light-mode .stat-card h3 {
-    color: #64748b;
-}
-
-/* Bảng điều khiển thiết bị */
-body.light-mode .device-item {
-    background-color: #e2e8f0;
-}
-
-body.light-mode .device-name {
-    color: #0f172a;
-}
-
-/* Bảng danh sách dữ liệu */
-body.light-mode .data-table th {
-    background-color: #f8fafc;
-    color: #334155;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-body.light-mode .data-table td {
-    color: #0f172a;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-/* Ô tìm kiếm & Dropdown */
-body.light-mode .control-select,
-body.light-mode .control-search {
-    background-color: #ffffff;
-    border-color: #cbd5e1;
-    color: #0f172a;
-}
-
-body.light-mode .pagination-footer {
-    color: #475569;
-}
-
-body.light-mode .rows-per-page select,
-body.light-mode .btn-page {
-    background-color: #ffffff;
-    border-color: #cbd5e1;
-    color: #0f172a;
-}
-
-/* Khung Profile */
-body.light-mode .profile-card {
-    background-color: #ffffff;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-}
-
-body.light-mode .profile-details strong {
-    color: #0f172a;
-}
-
-body.light-mode .profile-details p {
-    color: #475569;
-}
-
-body.light-mode .theme-text.active {
-    color: #0f172a;
+/* Định dạng cho ảnh nằm gọn bên trong */
+.profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Tự co giãn giữ đúng tỷ lệ ảnh */
 }
