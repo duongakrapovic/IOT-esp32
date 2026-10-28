@@ -2,6 +2,7 @@
    MỤC LỤC TÌM KIẾM NHANH (Bấm Ctrl + F gõ cụm từ khóa):
    --------------------------------------------------------------------------
    [JS-MOCK]       : Dữ liệu giả lập (Mock data) 50 dòng & Biến trạng thái
+   [JS-TOAST] THÔNG BÁO POPUP (TOAST) & HÀM SAO CHÉP THỜI GIAN
    [JS-SPA]        : Cơ chế chuyển trang mượt mà không load lại (Single Page App)
    [JS-CHART]      : Cấu hình biểu đồ Chart.js 2 trục Y & cập nhật thẻ số liệu
    [JS-DEVICE]     : Hàm gửi lệnh POST bật/tắt thiết bị về Backend Server
@@ -9,6 +10,7 @@
    [JS-HIST-TAB]   : Tìm kiếm, lọc và phân trang bảng Active History
    [JS-THEME]      : Đồng bộ chế độ Sáng / Tối (Dark / Light) cho web & Biểu đồ
    [JS-INIT]       : Sự kiện khởi chạy đầu tiên khi tải xong website
+   [JS-PAGINATION] HÀM VẼ THANH PHÂN TRANG 3 NÚT SỐ VÀ CHUYỂN TRANG TRỰC TIẾP
    ========================================================================== */
 
 
@@ -93,6 +95,36 @@ let historyCurrentPage = 1;                   // Trang hiện tại của bảng
 let historyPageSize = 10;                      // Số lượng dòng hiển thị mỗi trang[cite: 5]
 let historyFilteredList = [...mockHistory];    // Mảng dữ liệu lịch sử sau khi áp dụng bộ lọc[cite: 5]
 
+/* ==========================================================================
+   [JS-TOAST] THÔNG BÁO POPUP (TOAST) & HÀM SAO CHÉP THỜI GIAN
+   ========================================================================== */
+
+// Hàm hiển thị thông báo dạng Popup Toast trượt từ góc phải
+function showToast(message, type = "success") {
+    const container = document.getElementById("toast-container");
+    if (!container) return;
+
+    const toast = document.createElement("div");
+    toast.className = `toast ${type}`;
+    const icon = type === "success" ? "✅" : "ℹ️";
+    toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+
+    container.appendChild(toast);
+
+    // Tự động gỡ bỏ thẻ sau 2.5 giây
+    setTimeout(() => {
+        toast.remove();
+    }, 2500);
+}
+
+// Hàm sao chép chuỗi thời gian vào Clipboard khi click vào ô thời gian
+function copyTimeText(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        showToast(`Đã chép: "${text}"`, "info");
+    }).catch(() => {
+        showToast("Không thể chép!", "info");
+    });
+}
 
 /* ==========================================================================
    [JS-SPA] 2. ĐIỀU HƯỚNG TRANG CON (SINGLE PAGE APPLICATION)
@@ -322,10 +354,13 @@ function updateStatDisplay(t, h, l) {
 /* ==========================================================================
    [JS-DEVICE] 4. ĐIỀU KHIỂN BẬT / TẮT THIẾT BỊ ĐÈN (POST API)
    - Kích hoạt vòng xoay loading tròn trong đúng 1 giây trước khi đổi đèn
+   - Hiển thị Toast thông báo trạng thái thành công
    ========================================================================== */
 function toggleDevice(deviceId, isChecked) {
     const itemElem = document.getElementById(`device-item-${deviceId}`);
     const switchElem = document.getElementById(`device-switch-${deviceId}`);
+    const deviceName = `Đèn ${deviceId}`;
+    const statusText = isChecked ? "bật" : "tắt";
 
     // Bật hiệu ứng loading xoay tròn trong 1 giây (1000ms)
     if (itemElem) {
@@ -335,6 +370,9 @@ function toggleDevice(deviceId, isChecked) {
         setTimeout(() => {
             itemElem.classList.remove("loading");
             if (switchElem) switchElem.disabled = false; // Mở lại công tắc sau 1 giây
+            
+            // Kích hoạt thông báo Popup Toast
+            showToast(`Đã ${statusText} thành công ${deviceName}!`, "success");
         }, 1000);
     }
 
@@ -351,27 +389,26 @@ function toggleDevice(deviceId, isChecked) {
    [JS-SENSOR-TAB] 5. QUẢN LÝ BẢNG DỮ LIỆU CẢM BIẾN (DATA SENSOR)
    ========================================================================== */
 function applySensorFilter() {
-    // Đọc giá trị riêng từ box Sort và box Filter
     const sortVal = document.getElementById("sort-sensor")?.value || "time_desc";
     const filterVal = document.getElementById("filter-sensor")?.value || "";
     const keyword = document.getElementById("search-sensor")?.value.toLowerCase().trim() || "";
 
-    // 1. Lọc theo từ khóa tìm kiếm và lọc theo loại cảm biến
     sensorFilteredList = mockSensors.filter(item => {
+        // 1. Lọc theo từ khóa tìm kiếm
         const matchText = item.sensor_name.toLowerCase().includes(keyword) || 
                           item.value.toLowerCase().includes(keyword) || 
                           item.time.toLowerCase().includes(keyword);
         if (!matchText) return false;
 
-        // Lọc theo box Filter riêng
-        if (filterVal && item.rawType !== filterVal) {
+        // 2. Lọc theo loại cảm biến (nếu chọn "time" hoặc "Tất cả loại" thì bỏ qua điều kiện rawType)
+        if (filterVal && filterVal !== "time" && item.rawType !== filterVal) {
             return false;
         }
 
         return true;
     });
 
-    // 2. Sắp xếp theo box Sort riêng (Mới nhất / Cũ nhất)
+    // 3. Sắp xếp thời gian
     if (sortVal === "time_asc") {
         sensorFilteredList.sort((a, b) => a.id - b.id);
     } else {
@@ -382,48 +419,37 @@ function applySensorFilter() {
     renderSensorPage();
 }
 // Hàm render dữ liệu ra các dòng <tr> bên trong thẻ <tbody> của bảng cảm biến[cite: 5]
+// Hàm render dữ liệu ra các dòng <tr> bên trong thẻ <tbody> của bảng cảm biến
 function renderSensorPage() {
     const tbody = document.getElementById("table-sensor-body");
-    if (!tbody) return; // Nếu bảng chưa hiển thị trên trang thì dừng[cite: 5]
+    if (!tbody) return;
 
-    const totalRecords = sensorFilteredList.length; // Tổng số bản ghi sau khi lọc[cite: 5]
-    
-    // Tính tổng số trang: Làm tròn lên bằng Math.ceil; nếu không có bản ghi nào thì mặc định là 1 trang[cite: 5]
+    const totalRecords = sensorFilteredList.length;
     const totalPages = Math.ceil(totalRecords / sensorPageSize) || 1;
-    
-    // Rào chắn bảo vệ: Không để trang hiện tại vượt quá tổng số trang[cite: 5]
     if (sensorCurrentPage > totalPages) sensorCurrentPage = totalPages;
 
-    // Tính chỉ số bắt đầu cắt mảng: (Trang hiện tại - 1) * Số dòng mỗi trang[cite: 5]
     const startIdx = (sensorCurrentPage - 1) * sensorPageSize;
-    
-    // Dùng hàm .slice() cắt mảng lấy đúng số bản ghi cần hiển thị trên trang này[cite: 5]
     const pageItems = sensorFilteredList.slice(startIdx, startIdx + sensorPageSize);
 
-    // Xóa sạch nội dung cũ của <tbody> trước khi tạo dòng mới[cite: 5]
     tbody.innerHTML = "";
 
-    // Nếu không có bản ghi nào thì hiển thị dòng thông báo báo rỗng[cite: 5]
     if (pageItems.length === 0) {
         tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Không tìm thấy bản ghi phù hợp</td></tr>`;
     } else {
-        // Duyệt qua từng bản ghi và nối thẻ <tr> vào thân bảng[cite: 5]
         pageItems.forEach(item => {
             tbody.innerHTML += `
                 <tr>
                     <td>${item.id}</td>
                     <td>${item.sensor_name}</td>
                     <td>${item.value}</td>
-                    <td>${item.time}</td>
+                    <td class="copyable-time" title="Click để copy thời gian" onclick="copyTimeText('${item.time}')">${item.time} 📋</td>
                 </tr>
             `;
         });
     }
 
-    // Cập nhật số trang hiện tại vào thẻ nhãn màu xanh ở footer[cite: 5]
-    document.getElementById("page-num-sensor").innerText = sensorCurrentPage;
-    
-    // Cập nhật thông tin chi tiết: Trang X / Y (Tổng Z bản ghi)[cite: 5]
+    // Vẽ thanh phân trang hiển thị 3 nút trang
+    renderPaginationControls("sensor", sensorCurrentPage, totalPages);
     document.getElementById("page-info-sensor").innerText = `Trang ${sensorCurrentPage} / ${totalPages} (Tổng ${totalRecords} bản ghi)`;
 }
 
@@ -491,14 +517,14 @@ function applyHistoryFilter() {
     historyCurrentPage = 1;
     renderHistoryPage();
 }
-// Hiển thị dữ liệu lịch sử ra các dòng <tr> của bảng[cite: 5]
+// Hiển thị dữ liệu lịch sử ra các dòng <tr> của bảng
 function renderHistoryPage() {
     const tbody = document.getElementById("table-history-body");
     if (!tbody) return;
 
     const totalRecords = historyFilteredList.length;
     const totalPages = Math.ceil(totalRecords / historyPageSize) || 1;
-    if (sensorCurrentPage > totalPages) historyCurrentPage = totalPages;
+    if (historyCurrentPage > totalPages) historyCurrentPage = totalPages;
 
     const startIdx = (historyCurrentPage - 1) * historyPageSize;
     const pageItems = historyFilteredList.slice(startIdx, startIdx + historyPageSize);
@@ -529,16 +555,16 @@ function renderHistoryPage() {
                     <td>${item.user || "admin"}</td>
                     <td>${item.action}</td>
                     <td>${statusHtml}</td>
-                    <td>${item.time}</td>
+                    <td class="copyable-time" title="Click để copy thời gian" onclick="copyTimeText('${item.time}')">${item.time} 📋</td>
                 </tr>
             `;
         });
     }
 
-    document.getElementById("page-num-history").innerText = historyCurrentPage;
+    // Vẽ thanh phân trang hiển thị 3 nút trang
+    renderPaginationControls("history", historyCurrentPage, totalPages);
     document.getElementById("page-info-history").innerText = `Trang ${historyCurrentPage} / ${totalPages} (Tổng ${totalRecords} bản ghi)`;
 }
-
 // Thay đổi số dòng trên 1 trang cho bảng lịch sử[cite: 5]
 function changeHistoryPageSize(size) {
     historyPageSize = parseInt(size);
@@ -622,3 +648,45 @@ document.addEventListener("DOMContentLoaded", () => {
     // Tự động mở trang Dashboard đầu tiên và kích hoạt trạng thái active cho menu dòng 1[cite: 5]
     switchPage("dashboard", document.querySelector(".sidebar nav li.active"));
 });
+/* ==========================================================================
+   [JS-PAGINATION] HÀM VẼ THANH PHÂN TRANG 3 NÚT SỐ VÀ CHUYỂN TRANG TRỰC TIẾP
+   ========================================================================== */
+function renderPaginationControls(type, currentPage, totalPages) {
+    const container = document.querySelector(`#page-info-${type}`)?.parentElement?.querySelector(".pagination-controls");
+    if (!container) return;
+
+    // Tính dải 3 trang xung quanh trang hiện tại
+    let startPage = Math.max(1, currentPage - 1);
+    let endPage = Math.min(totalPages, startPage + 2);
+
+    if (endPage - startPage < 2) {
+        startPage = Math.max(1, endPage - 2);
+    }
+
+    const prevFunc = type === 'sensor' ? 'prevSensorPage()' : 'prevHistoryPage()';
+    const nextFunc = type === 'sensor' ? 'nextSensorPage()' : 'nextHistoryPage()';
+
+    let html = `<button class="btn-page" onclick="${prevFunc}">‹ Trước</button>`;
+
+    for (let p = startPage; p <= endPage; p++) {
+        const activeClass = p === currentPage ? "active" : "";
+        const goToFunc = type === 'sensor' ? `goToSensorPage(${p})` : `goToHistoryPage(${p})`;
+        html += `<button class="btn-page-num ${activeClass}" onclick="${goToFunc}">${p}</button>`;
+    }
+
+    html += `<button class="btn-page" onclick="${nextFunc}">Sau ›</button>`;
+
+    container.innerHTML = html;
+}
+
+// Chuyển trực tiếp đến trang bấm chọn ở bảng Data Sensor
+function goToSensorPage(page) {
+    sensorCurrentPage = page;
+    renderSensorPage();
+}
+
+// Chuyển trực tiếp đến trang bấm chọn ở bảng Active History
+function goToHistoryPage(page) {
+    historyCurrentPage = page;
+    renderHistoryPage();
+}

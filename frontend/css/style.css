@@ -10,7 +10,11 @@
    [TIM-TIMKIEM]   : Ô tìm kiếm, bộ lọc Dropdown, nút tìm kiếm
    [TIM-PHANTRANG] : Thanh phân trang, chọn số dòng, nút chuyển trang
    [TIM-PROFILE]   : Khung thẻ thông tin cá nhân sinh viên 
+   [TIM-POPUP]     : THÔNG BÁO POPUP (TOAST NOTIFICATION)
+   [TIM-COPY] 9. TÍNH NĂNG SAO CHÉP THỜI GIAN (CLICK TO COPY)
+   [TIM-PHANTRANG-NUM] 10. NÚT SỐ CHỌN TRANG TRỰC TIẾP
 
+   
    [TIM-BIEN] 1. BẢNG BIẾN MÀU DÙNG CHUNG (CSS VARIABLES)
    - Chức năng: Tập trung toàn bộ mã màu của website tại một nơi duy nhất.
    - Khi muốn đổi màu: Chỉ cần thay mã Hex (#...) tại đây, toàn bộ giao diện tự cập nhật. */
@@ -574,4 +578,96 @@ input:checked + .slider:before { transform: translateX(28px); content: "ON"; }
     width: 100%;
     height: 100%;
     object-fit: cover; /* Tự co giãn giữ đúng tỷ lệ ảnh */
+}
+/* ========================================================
+   [TIM-POPUP] 8. THÔNG BÁO POPUP (TOAST NOTIFICATION)
+   ======================================================== */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    min-width: 260px;
+    padding: 12px 18px;
+    border-radius: 8px;
+    background-color: var(--bg-panel);
+    color: var(--text-main);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    border-left: 4px solid var(--btn-primary);
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideInRight 0.3s ease, fadeOut 0.4s ease 2.1s forwards;
+}
+
+.toast.success { border-left-color: #22c55e; }
+.toast.info { border-left-color: #3b82f6; }
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-10px); }
+}
+
+/* ========================================================
+   [TIM-COPY] 9. TÍNH NĂNG SAO CHÉP THỜI GIAN (CLICK TO COPY)
+   ======================================================== */
+.copyable-time {
+    cursor: pointer;
+    transition: color 0.2s;
+    user-select: all;
+}
+
+.copyable-time:hover {
+    color: var(--accent-green) !important;
+    text-decoration: underline;
+}
+
+/* ========================================================
+   [TIM-PHANTRANG-NUM] 10. NÚT SỐ CHỌN TRANG TRỰC TIẾP
+   ======================================================== */
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-page-num {
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btn-page-num:hover {
+    border-color: var(--accent-green);
+    color: var(--accent-green);
+}
+
+.btn-page-num.active {
+    background-color: var(--accent-green);
+    color: #0f172a;
+    border-color: var(--accent-green);
+    font-weight: bold;
 }
