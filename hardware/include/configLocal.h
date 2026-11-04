@@ -14,11 +14,8 @@
 
 #define MQTT_SERVER "c8b86407ac1540f19bc71edc98150df0.s1.eu.hivemq.cloud"
 #define MQTT_PORT 8883
-//1883: MQTT không mã hóa (Port giao tiếp chính mặc định ban đầu).
-//8883: MQTT có mã hóa bảo mật ( đã cấu hình chứng chỉ SSL/TLS).
-//(Secure Sockets Layer) &  (Transport Layer Security)
 
 #define MQTT_USERNAME "vuhaiduong"
 #define MQTT_PASSWORD "b23dccn233"
 
-#endif
+#endif // CONFIG_LOCAL_H

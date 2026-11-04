@@ -1,123 +1,59 @@
 /* ==========================================================================
    MỤC LỤC TÌM KIẾM NHANH (Bấm Ctrl + F gõ cụm từ khóa):
    --------------------------------------------------------------------------
-   [JS-MOCK]       : Dữ liệu giả lập (Mock data) 50 dòng & Biến trạng thái
-   [JS-TOAST] THÔNG BÁO POPUP (TOAST) & HÀM SAO CHÉP THỜI GIAN
+   [JS-API]        : Cấu hình URL Backend API & Biến trạng thái toàn cục
+   [JS-TOAST]      : THÔNG BÁO POPUP (TOAST) & HÀM SAO CHÉP THỜI GIAN
    [JS-SPA]        : Cơ chế chuyển trang mượt mà không load lại (Single Page App)
-   [JS-CHART]      : Cấu hình biểu đồ Chart.js 2 trục Y & cập nhật thẻ số liệu
-   [JS-DEVICE]     : Hàm gửi lệnh POST bật/tắt thiết bị về Backend Server
-   [JS-SENSOR-TAB] : Tìm kiếm, lọc và phân trang bảng Data Sensor
-   [JS-HIST-TAB]   : Tìm kiếm, lọc và phân trang bảng Active History
+   [JS-DEVICE-SYNC]: Đồng bộ trạng thái công tắc dựa trên CSDL MySQL
+   [JS-CHART]      : Cấu hình biểu đồ Chart.js & Realtime Polling Dashboard
+   [JS-DEVICE]     : Hàm gửi lệnh POST bật/tắt thiết bị & Chờ phản hồi
+   [JS-SENSOR-TAB] : Lấy dữ liệu, Lọc và Phân trang Bảng Data Sensor (Real-time 2s)
+   [JS-HIST-TAB]   : Lấy dữ liệu và Phân trang Bảng Active History từ MySQL
+   [JS-PROFILE-TAB]: Tải thông tin Tác giả website từ bảng Profile
+   [JS-PAGINATION] : HÀM VẼ THANH PHÂN TRANG 3 NÚT SỐ VÀ CHUYỂN TRANG TRỰC TIẾP
    [JS-THEME]      : Đồng bộ chế độ Sáng / Tối (Dark / Light) cho web & Biểu đồ
    [JS-INIT]       : Sự kiện khởi chạy đầu tiên khi tải xong website
-   [JS-PAGINATION] HÀM VẼ THANH PHÂN TRANG 3 NÚT SỐ VÀ CHUYỂN TRANG TRỰC TIẾP
    ========================================================================== */
-
 
 /* ==========================================================================
-   [JS-MOCK] 1. CẤU HÌNH API, BIẾN TOÀN CỤC & TẠO DỮ LIỆU GIẢ LẬP
+   [JS-API] 1. CẤU HÌNH BACKEND API & BIẾN TRẠNG THÁI TOÀN CỤC
    ========================================================================== */
-
-// Đường dẫn gốc của máy chủ backend (Node.js/Express đang lắng nghe ở cổng 5000)[cite: 5]
 const API_BASE = "http://localhost:5000/api";
 
-// Biến lưu định danh của bộ đếm thời gian (setInterval), dùng để hủy polling khi rời Dashboard[cite: 5]
-let sensorPollingInterval = null;
-
-// Biến lưu đối tượng (instance) biểu đồ Chart.js để gọi các phương thức như .destroy(), .update()[cite: 5]
+let sensorPollingInterval = null; // Polling 2s cho Dashboard (Chart + Cards + Công tắc)
+let tablePollingInterval = null;  // Polling 2s cho Bảng Data Sensor & Active History
 let sensorChart = null;
+let isLightMode = false;
 
-// Khai báo mảng rỗng để chứa 50 bản ghi mẫu cho bảng cảm biến và bảng lịch sử[cite: 5]
-const mockSensors = [];
-const mockHistory = [];
+let sensorCurrentPage = 1;
+let sensorPageSize = 10;
 
-// Lấy mốc thời gian hiện tại tính bằng mili-giây (timestamp) làm mốc cơ sở[cite: 5]
-const baseTime = Date.now();
-const sampleStatuses = ["success", "fail", "pending"];
-// Vòng lặp chạy 50 lần để sinh 50 dòng dữ liệu mẫu độc lập[cite: 5]
-for (let i = 0; i < 50; i++) {
-    // Mỗi bản ghi lùi lại 15 giây (i * 15000 ms) so với mốc thời gian trước đó để tạo chuỗi thời gian liên tục[cite: 5]
-    const tStr = new Date(baseTime - i * 15000).toLocaleTimeString("vi-VN") + ", 12/10/2026";
-    
-    // Dùng phép chia lấy dư (%) cho 3 để sinh xen kẽ lần lượt 3 loại cảm biến[cite: 5]
-    const typeMod = i % 3;
-
-    if (typeMod === 0) {
-        // Bản ghi Nhiệt độ: dao động từ 28.0°C đến 30.0°C[cite: 5]
-        mockSensors.push({ 
-            id: i,                                      // Mã định danh duy nhất của dòng[cite: 5]
-            sensor_name: "nhiệt độ",                    // Tên hiển thị trên bảng[cite: 5]
-            value: `${(28 + (i % 5) * 0.5).toFixed(1)}°C`, // Chuỗi hiển thị kèm đơn vị (°C)[cite: 5]
-            time: tStr,                                 // Chuỗi thời gian đã định dạng ngày giờ[cite: 5]
-            rawType: "temp",                            // Định danh dạng chuỗi ngắn dùng khi lọc dữ liệu[cite: 5]
-            rawVal: +(28 + (i % 5) * 0.5).toFixed(1)    // Số thực thuần túy để thư viện Chart.js vẽ trục[cite: 5]
-        });
-    } else if (typeMod === 1) {
-        // Bản ghi Độ ẩm: dao động từ 55% đến 64%[cite: 5]
-        mockSensors.push({ 
-            id: i, 
-            sensor_name: "độ ẩm", 
-            value: `${55 + (i % 10)}%`, 
-            time: tStr, 
-            rawType: "humid", 
-            rawVal: 55 + (i % 10) 
-        });
-    } else {
-        // Bản ghi Ánh sáng: dao động từ 250 đến 530 Lux[cite: 5]
-        mockSensors.push({ 
-            id: i, 
-            sensor_name: "ánh sáng", 
-            value: `${250 + (i % 15) * 20} Lux`, 
-            time: tStr, 
-            rawType: "light", 
-            rawVal: 250 + (i % 15) * 20 
-        });
-    }
-
-    // Sinh dữ liệu lịch sử thao tác điều khiển thiết bị đèn[cite: 5]
-    mockHistory.push({
-        id: i,                                          // ID hành động[cite: 5]
-        device_name: `đèn ${(i % 3) + 1}`,              // Tên thiết bị: lần lượt từ đèn 1 đến đèn 3[cite: 5]
-        user: "admin",
-        action: i % 2 === 0 ? "bật" : "tắt",            // Xen kẽ thao tác Bật (chẵn) và Tắt (lẻ)[cite: 5]
-        status: sampleStatuses[i % 3], 
-        time: tStr                                      // Mốc thời gian kích hoạt[cite: 5]
-    });
-}
-
-// --- BIẾN TRẠNG THÁI (STATE) BẢNG DATA SENSOR ---
-let sensorCurrentPage = 1;                    // Lưu trang hiện tại người dùng đang xem (mặc định là trang 1)[cite: 5]
-let sensorPageSize = 10;                       // Số lượng dòng hiển thị tối đa trên một trang[cite: 5]
-let sensorFilteredList = [...mockSensors];     // Mảng chứa kết quả sau khi tìm kiếm/lọc (sao chép mảng gốc)[cite: 5]
-
-// --- BIẾN TRẠNG THÁI (STATE) BẢNG ACTIVE HISTORY ---
-let historyCurrentPage = 1;                   // Trang hiện tại của bảng lịch sử[cite: 5]
-let historyPageSize = 10;                      // Số lượng dòng hiển thị mỗi trang[cite: 5]
-let historyFilteredList = [...mockHistory];    // Mảng dữ liệu lịch sử sau khi áp dụng bộ lọc[cite: 5]
+let historyCurrentPage = 1;
+let historyPageSize = 10;
 
 /* ==========================================================================
-   [JS-TOAST] THÔNG BÁO POPUP (TOAST) & HÀM SAO CHÉP THỜI GIAN
+   [JS-TOAST] 2. THÔNG BÁO POPUP (TOAST) & HÀM SAO CHÉP THỜI GIAN
    ========================================================================== */
-
-// Hàm hiển thị thông báo dạng Popup Toast trượt từ góc phải
 function showToast(message, type = "success") {
     const container = document.getElementById("toast-container");
     if (!container) return;
 
+    // Xóa ngay thông báo cũ để không bị đè chữ
+    container.innerHTML = "";
+
     const toast = document.createElement("div");
     toast.className = `toast ${type}`;
-    const icon = type === "success" ? "✅" : "ℹ️";
+    const icon = type === "success" ? "✅" : (type === "info" ? "ℹ️" : "⚠️");
     toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
 
     container.appendChild(toast);
 
-    // Tự động gỡ bỏ thẻ sau 2.5 giây
+    // Hiển thị ngay lập tức và tự biến mất sau 3.0 giây để người dùng kịp đọc
     setTimeout(() => {
         toast.remove();
-    }, 2500);
+    }, 3000);
 }
 
-// Hàm sao chép chuỗi thời gian vào Clipboard khi click vào ô thời gian
 function copyTimeText(text) {
     navigator.clipboard.writeText(text).then(() => {
         showToast(`Đã chép: "${text}"`, "info");
@@ -127,60 +63,75 @@ function copyTimeText(text) {
 }
 
 /* ==========================================================================
-   [JS-SPA] 2. ĐIỀU HƯỚNG TRANG CON (SINGLE PAGE APPLICATION)
-   - Không tải lại toàn trang web, dùng fetch lấy HTML con đổ vào #app-content[cite: 5]
+   [JS-SPA] 3. ĐIỀU HƯỚNG TRANG CON (SINGLE PAGE APPLICATION)
    ========================================================================== */
 function switchPage(pageName, element) {
-    // 1. Duyệt qua tất cả các thẻ <li> trong Sidebar để xóa class 'active' cũ[cite: 5]
     document.querySelectorAll(".sidebar nav li").forEach(li => li.classList.remove("active"));
-    
-    // 2. Nếu có truyền thẻ được click vào thì gắn class 'active' để đổi màu sáng menu[cite: 5]
     if (element) element.classList.add("active");
 
-    // 3. Dọn dẹp tài nguyên: Dừng việc gọi API nền của trang Dashboard nếu chuyển sang trang khác[cite: 5]
+    // Xóa bộ đếm cũ khi đổi tab
     if (sensorPollingInterval) {
-        clearInterval(sensorPollingInterval); // Xóa hàm đếm lặp thời gian[cite: 5]
-        sensorPollingInterval = null;         // Đưa con trỏ về null[cite: 5]
+        clearInterval(sensorPollingInterval);
+        sensorPollingInterval = null;
+    }
+    if (tablePollingInterval) {
+        clearInterval(tablePollingInterval);
+        tablePollingInterval = null;
     }
 
-    // 4. Gửi yêu cầu HTTP ngầm để đọc nội dung file HTML tương ứng trong thư mục pages/[cite: 5]
     fetch(`pages/${pageName}.html`)
-        .then(res => res.text()) // Chuyển đổi dữ liệu nhận được thành chuỗi văn bản HTML[cite: 5]
+        .then(res => res.text())
         .then(html => {
-            // Nhúng trực tiếp toàn bộ khối HTML vừa tải vào thẻ chứa chính[cite: 5]
             document.getElementById("app-content").innerHTML = html;
 
-            // 5. Kiểm tra trang nào vừa được tải xong để gọi hàm khởi tạo logic tương ứng[cite: 5]
             if (pageName === "dashboard") {
-                initDashboard(); // Khởi tạo biểu đồ và đồng bộ nút theme[cite: 5]
-            }
-            if (pageName === "dataSensor") {
-                sensorCurrentPage = 1; // Luôn đưa người dùng về trang 1 khi mới mở bảng[cite: 5]
-                applySensorFilter();   // Áp dụng bộ lọc mặc định và đổ dữ liệu vào bảng cảm biến[cite: 5]
-            }
-            if (pageName === "activeHistory") {
-                historyCurrentPage = 1; // Luôn đưa về trang 1[cite: 5]
-                applyHistoryFilter();  // Áp dụng bộ lọc mặc định và đổ dữ liệu vào bảng lịch sử[cite: 5]
+                initDashboard();
+            } else if (pageName === "dataSensor") {
+                sensorCurrentPage = 1;
+                fetchSensorData();
+                tablePollingInterval = setInterval(fetchSensorData, 2000);
+            } else if (pageName === "activeHistory") {
+                historyCurrentPage = 1;
+                fetchHistoryData();
+                tablePollingInterval = setInterval(fetchHistoryData, 2000);
+            } else if (pageName === "profile") {
+                loadProfileData();
             }
         })
         .catch(err => {
-            // Xử lý bắt lỗi nếu đường dẫn file sai hoặc mất mạng cục bộ[cite: 5]
             document.getElementById("app-content").innerHTML = `<p style="color:red">Lỗi tải trang: ${err.message}</p>`;
         });
 }
 
+/* ==========================================================================
+   [JS-DEVICE-SYNC] 4. ĐỒNG BỘ TRẠNG THÁI CÔNG TẮC TỪ CSDL (Định nghĩa trước)
+   ========================================================================== */
+async function syncDeviceStatus() {
+    try {
+        const res = await fetch(`${API_BASE}/devices/status`);
+        const result = await res.json();
+        if (result.success && result.data) {
+            result.data.forEach(item => {
+                const switchElem = document.getElementById(`device-switch-${item.device_id}`);
+                if (switchElem && !switchElem.disabled) {
+                    const actionStr = (item.action || "").toLowerCase().trim();
+                    const isON = ['on', 'bật', '1', 'true'].includes(actionStr);
+                    switchElem.checked = isON;
+                }
+            });
+        }
+    } catch (err) {
+        console.error("Lỗi lấy trạng thái công tắc:", err);
+    }
+}
 
 /* ==========================================================================
-   [JS-CHART] 3. KHỞI TẠO BIỂU ĐỒ & HIỂN THỊ THÔNG SỐ TRÊN DASHBOARD
+   [JS-CHART] 5. BIỂU ĐỒ CHART.JS & REAL-TIME DASHBOARD DATA
    ========================================================================== */
 function initDashboard() {
-    // 1. Tìm phần tử nút checkbox chuyển Theme trên giao diện vừa được tải vào[cite: 5]
     const themeCheckbox = document.getElementById("theme-checkbox");
     if (themeCheckbox) {
-        // Gán lại trạng thái checked cho checkbox theo đúng biến toàn cục isLightMode[cite: 5]
         themeCheckbox.checked = isLightMode;
-        
-        // Cập nhật chữ sáng/tối (Dark/Light) bên cạnh nút gạt[cite: 5]
         if (isLightMode) {
             document.getElementById("label-light")?.classList.add("active");
             document.getElementById("label-dark")?.classList.remove("active");
@@ -190,156 +141,126 @@ function initDashboard() {
         }
     }
 
-    // 2. Tìm thẻ <canvas> vẽ biểu đồ; nếu chưa tồn tại trong DOM thì thoát hàm để tránh crash[cite: 5]
     const chartCanvas = document.getElementById("sensorChart");
     if (!chartCanvas) return;
-    
-    // Lấy ngữ cảnh vẽ 2D (Rendering Context) của thẻ Canvas[cite: 5]
     const ctx = chartCanvas.getContext("2d");
 
-    // 3. Trích xuất đúng 10 bản ghi gần nhất theo từng loại cảm biến từ mảng mockSensors[cite: 5]
-    // .slice(0, 10): Lấy 10 bản ghi đầu tiên[cite: 5]
-    // .reverse(): Đảo ngược lại thứ tự để dữ liệu cũ nằm bên trái, dữ liệu mới nhất nằm bên phải trục thời gian[cite: 5]
-    const tempRecords = mockSensors.filter(s => s.rawType === "temp").slice(0, 10).reverse();
-    const humidRecords = mockSensors.filter(s => s.rawType === "humid").slice(0, 10).reverse();
-    const lightRecords = mockSensors.filter(s => s.rawType === "light").slice(0, 10).reverse();
+    const textColor = isLightMode ? "#0f172a" : "#ffffff";
+    const gridColor = isLightMode ? "#e2e8f0" : "#334155";
 
-    // 4. Tạo mảng nhãn thời gian trục hoành X (cắt chuỗi chỉ lấy giờ:phút:giây)[cite: 5]
-    const initialLabels = tempRecords.map(item => item.time.split(",")[0].trim());
-    
-    // Tạo 3 mảng dữ liệu số thực tương ứng để vẽ 3 đường cong[cite: 5]
-    const initTemp = tempRecords.map(item => item.rawVal);
-    const initHumid = humidRecords.map(item => item.rawVal);
-    const initLight = lightRecords.map(item => item.rawVal);
+    if (sensorChart) sensorChart.destroy();
 
-    // 5. Tính toán màu sắc chữ và lưới tọa độ sao cho tương phản với nền giao diện hiện tại[cite: 5]
-    const textColor = isLightMode ? "#0f172a" : "#ffffff"; // Nền sáng chữ đen, nền tối chữ trắng[cite: 5]
-    const gridColor = isLightMode ? "#e2e8f0" : "#334155"; // Màu đường kẻ mờ phân cách tọa độ[cite: 5]
-
-    // 6. Nếu đã có biểu đồ cũ đang chạy ngầm thì phải hủy trước khi tạo mới để tránh xung đột bộ nhớ[cite: 5]
-    if (sensorChart) {
-        sensorChart.destroy();
-    }
-
-    // 7. Khởi tạo đối tượng biểu đồ đường Chart.js[cite: 5]
     sensorChart = new Chart(ctx, {
-        type: "line", // Kiểu biểu đồ đường cong[cite: 5]
+        type: "line",
         data: {
-            labels: initialLabels, // Trục hoành X (Danh sách mốc thời gian)[cite: 5]
+            labels: [],
             datasets: [
                 {
-                    label: "Nhiệt độ (°C)",           // Tên hiển thị trên chú thích (Legend)[cite: 5]
-                    borderColor: "#f87171",          // Màu đường kẻ (Đỏ cam)[cite: 5]
-                    backgroundColor: "#f87171",      // Màu điểm chấm tròn[cite: 5]
-                    data: initTemp,                  // Mảng số liệu nhiệt độ[cite: 5]
-                    yAxisID: "yTempHumid",           // Gán vào trục tung bên trái[cite: 5]
-                    tension: 0.3                     // Độ uốn cong của đường (0 = gấp khúc nhọn, 1 = rất cong)[cite: 5]
+                    label: "Nhiệt độ (°C)",
+                    borderColor: "#f87171",
+                    backgroundColor: "#f87171",
+                    data: [],
+                    yAxisID: "yTempHumid",
+                    tension: 0.3
                 },
                 {
                     label: "Độ ẩm (%)",
-                    borderColor: "#38bdf8",          // Màu đường kẻ (Xanh da trời)[cite: 5]
+                    borderColor: "#38bdf8",
                     backgroundColor: "#38bdf8",
-                    data: initHumid,
-                    yAxisID: "yTempHumid",           // Dùng chung trục tung bên trái với nhiệt độ[cite: 5]
+                    data: [],
+                    yAxisID: "yTempHumid",
                     tension: 0.3
                 },
                 {
                     label: "Ánh sáng (Lux)",
-                    borderColor: "#facc15",          // Màu đường kẻ (Vàng nắng)[cite: 5]
+                    borderColor: "#facc15",
                     backgroundColor: "#facc15",
-                    data: initLight,
-                    yAxisID: "yLight",               // Gán vào trục tung độc lập bên phải[cite: 5]
+                    data: [],
+                    yAxisID: "yLight",
                     tension: 0.3
                 }
             ]
         },
         options: {
-            animation: false,          // Tắt hiệu ứng di chuyển khi vẽ để giao diện không bị giật lag[cite: 5]
-            responsive: true,         // Tự động co dãn theo kích thước màn hình[cite: 5]
-            maintainAspectRatio: false, // Bỏ tỉ lệ cố định để biểu đồ lấp đầy khung 380px của CSS[cite: 5]
+            animation: false,
+            responsive: true,
+            maintainAspectRatio: false,
             scales: {
-                // Cấu hình trục hoành X (Trục ngang thời gian)[cite: 5]
-                x: {
-                    grid: { color: gridColor }, // Màu đường kẻ dọc[cite: 5]
-                    ticks: { color: textColor }  // Màu chữ các mốc giờ[cite: 5]
-                },
-                // Trục tung Y bên trái: Đo Nhiệt độ (0-100) và Độ ẩm (0-100)[cite: 5]
+                x: { grid: { color: gridColor }, ticks: { color: textColor } },
                 yTempHumid: {
                     type: "linear",
-                    position: "left",           // Đặt ở mép trái biểu đồ[cite: 5]
-                    min: 0,                     // Giá trị nhỏ nhất là 0[cite: 5]
-                    max: 100,                   // Giá trị lớn nhất là 100[cite: 5]
-                    grid: { color: gridColor }, // Kẻ các đường ngang chuẩn[cite: 5]
-                    ticks: {
-                        color: textColor,
-                        callback: val => `${val}` // Hiển thị số nguyên thuần túy trên trục[cite: 5]
-                    },
-                    title: {
-                        display: true,          // Bật hiển thị tên trục[cite: 5]
-                        text: "Nhiệt độ (°C) / Độ ẩm (%)",
-                        color: textColor
-                    }
+                    position: "left",
+                    min: 0,
+                    max: 100,
+                    grid: { color: gridColor },
+                    ticks: { color: textColor },
+                    title: { display: true, text: "Nhiệt độ (°C) / Độ ẩm (%)", color: textColor }
                 },
-                // Trục tung Y bên phải: Đo Ánh sáng (Thang đo lên đến 800 Lux)[cite: 5]
                 yLight: {
                     type: "linear",
-                    position: "right",          // Đặt ở mép phải biểu đồ[cite: 5]
+                    position: "right",
                     min: 0,
-                    suggestedMax: 800,          // Mở rộng trục lên 800 Lux để bao quát giá trị quang trở[cite: 5]
-                    grid: { drawOnChartArea: false }, // Tắt kẻ đường ngang trục này để không đè rối mắt lên trục trái[cite: 5]
-                    ticks: {
-                        color: textColor,
-                        callback: val => `${val} Lx` // Gắn thêm đơn vị 'Lx' vào số trên trục[cite: 5]
-                    },
-                    title: {
-                        display: true,
-                        text: "Ánh sáng (Lux)",
-                        color: textColor
-                    }
+                    suggestedMax: 800,
+                    grid: { drawOnChartArea: false },
+                    ticks: { color: textColor, callback: val => `${val} Lx` },
+                    title: { display: true, text: "Ánh sáng (Lux)", color: textColor }
                 }
             },
             plugins: {
-                // Cấu hình bảng chú thích 3 màu ở đầu biểu đồ[cite: 5]
-                legend: { 
-                    labels: { color: textColor } // Đổi màu chữ chú thích theo Theme sáng/tối[cite: 5]
-                }
+                legend: { labels: { color: textColor } }
             }
         }
     });
 
-    // 8. Đổ giá trị số đo mới nhất ra 3 thẻ hiển thị ở hàng dưới[cite: 5]
-    if (initTemp.length > 0) {
-        updateStatDisplay(
-            initTemp[initTemp.length - 1],   // Giá trị nhiệt độ phần tử cuối cùng[cite: 5]
-            initHumid[initHumid.length - 1], // Giá trị độ ẩm cuối cùng[cite: 5]
-            initLight[initLight.length - 1]  // Giá trị ánh sáng cuối cùng[cite: 5]
-        );
+    loadDashboardData();
+    syncDeviceStatus();
+    sensorPollingInterval = setInterval(() => {
+        loadDashboardData();
+        syncDeviceStatus();
+    }, 2000);
+}
+
+async function loadDashboardData() {
+    try {
+        const res = await fetch(`${API_BASE}/sensors/latest`);
+        const result = await res.json();
+
+        if (result.success && result.data) {
+            const rawData = result.data;
+
+            const latestTemp = rawData.find(d => d.sensor_id === 1)?.value || 0;
+            const latestHumid = rawData.find(d => d.sensor_id === 2)?.value || 0;
+            const latestLight = rawData.find(d => d.sensor_id === 3)?.value || 0;
+
+            updateStatDisplay(latestTemp, latestHumid, latestLight);
+
+            const grouped = {};
+            rawData.forEach(item => {
+                const timeStr = item.time ? new Date(item.time).toLocaleTimeString("vi-VN") : "";
+                if (!grouped[timeStr]) grouped[timeStr] = {};
+                if (item.sensor_id === 1) grouped[timeStr].temp = item.value;
+                if (item.sensor_id === 2) grouped[timeStr].humid = item.value;
+                if (item.sensor_id === 3) grouped[timeStr].light = item.value;
+            });
+
+            const labels = Object.keys(grouped).reverse().slice(-10);
+            const tempData = labels.map(t => grouped[t].temp || 0);
+            const humidData = labels.map(t => grouped[t].humid || 0);
+            const lightData = labels.map(t => grouped[t].light || 0);
+
+            if (sensorChart) {
+                sensorChart.data.labels = labels;
+                sensorChart.data.datasets[0].data = tempData;
+                sensorChart.data.datasets[1].data = humidData;
+                sensorChart.data.datasets[2].data = lightData;
+                sensorChart.update("none");
+            }
+        }
+    } catch (err) {
+        console.error("Lỗi cập nhật Dashboard:", err);
     }
 }
 
-// Hàm đẩy điểm dữ liệu mới vào biểu đồ theo thời gian thực (Dùng cho WebSocket / MQTT / Polling)[cite: 5]
-function pushChartData(timeLabel, temp, humid, light) {
-    if (!sensorChart) return; // Nếu biểu đồ chưa vẽ thì bỏ qua[cite: 5]
-
-    // Thêm mốc thời gian mới và các số liệu mới vào cuối mảng[cite: 5]
-    sensorChart.data.labels.push(timeLabel);
-    sensorChart.data.datasets[0].data.push(temp);
-    sensorChart.data.datasets[1].data.push(humid);
-    sensorChart.data.datasets[2].data.push(light);
-
-    // Luôn giữ tối đa 10 điểm trên biểu đồ; nếu quá 10 điểm thì xóa điểm cũ nhất ở đầu mảng (.shift())[cite: 5]
-    if (sensorChart.data.labels.length > 10) {
-        sensorChart.data.labels.shift();
-        sensorChart.data.datasets[0].data.shift();
-        sensorChart.data.datasets[1].data.shift();
-        sensorChart.data.datasets[2].data.shift();
-    }
-    
-    // Cập nhật lại giao diện biểu đồ; tham số 'none' giúp cập nhật ngay mà không chạy lại hiệu ứng[cite: 5]
-    sensorChart.update("none");
-}
-
-// Cập nhật nội dung text hiển thị trên 3 thẻ Card ở góc phải hàng dưới[cite: 5]
 function updateStatDisplay(t, h, l) {
     const tempElem = document.getElementById("temp-value");
     const humidElem = document.getElementById("humid-value");
@@ -350,312 +271,314 @@ function updateStatDisplay(t, h, l) {
     if (lightElem) lightElem.innerText = `${l} Lux`;
 }
 
-
 /* ==========================================================================
-   [JS-DEVICE] 4. ĐIỀU KHIỂN BẬT / TẮT THIẾT BỊ ĐÈN (POST API)
-   - Kích hoạt vòng xoay loading tròn trong đúng 1 giây trước khi đổi đèn
-   - Hiển thị Toast thông báo trạng thái thành công
+   [JS-DEVICE] 6. ĐIỀU KHIỂN BẬT / TẮT ĐÈN (DELAY XOAY 1S & PHẢN HỒI NGUYÊN BẢN)
    ========================================================================== */
 function toggleDevice(deviceId, isChecked) {
     const itemElem = document.getElementById(`device-item-${deviceId}`);
     const switchElem = document.getElementById(`device-switch-${deviceId}`);
     const deviceName = `Đèn ${deviceId}`;
+    const action = isChecked ? "ON" : "OFF";
     const statusText = isChecked ? "bật" : "tắt";
 
-    // Bật hiệu ứng loading xoay tròn trong 1 giây (1000ms)
-    if (itemElem) {
-        itemElem.classList.add("loading");
-        if (switchElem) switchElem.disabled = true; // Khóa công tắc tạm thời để tránh spam click
+    // 1. KÍCH HOẠT HIỆU ỨNG XOAY LOADING VÀ KHÓA CÔNG TẮC ĐÚNG 1 GIÂY
+    if (itemElem) itemElem.classList.add("loading");
+    if (switchElem) switchElem.disabled = true;
 
-        setTimeout(() => {
-            itemElem.classList.remove("loading");
-            if (switchElem) switchElem.disabled = false; // Mở lại công tắc sau 1 giây
-            
-            // Kích hoạt thông báo Popup Toast
-            showToast(`Đã ${statusText} thành công ${deviceName}!`, "success");
-        }, 1000);
-    }
-
-    // Gửi lệnh API POST về backend
-    const action = isChecked ? "ON" : "OFF";
+    // Gửi lệnh điều khiển xuống Backend
     fetch(`${API_BASE}/control`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ device_id: deviceId, action: action })
-    }).catch(() => {});
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) {
+            showToast(`Lỗi gửi lệnh đến ${deviceName}`, "info");
+            if (itemElem) itemElem.classList.remove("loading");
+            if (switchElem) {
+                switchElem.disabled = false;
+                switchElem.checked = !isChecked;
+            }
+            return;
+        }
+
+        const historyId = data.history_id;
+        
+        // Hiện thông báo tức khắc
+        showToast(`Đang gửi lệnh ${statusText} đến ${deviceName}...`, "info");
+
+        // Giữ hiệu ứng xoay loading đúng 1 giây cho mượt mắt
+        setTimeout(() => {
+            if (itemElem) itemElem.classList.remove("loading");
+            if (switchElem) switchElem.disabled = false;
+
+            // Kiểm tra phản hồi ngầm từ CSDL
+            let checkCount = 0;
+            const checkInterval = setInterval(async () => {
+                checkCount++;
+                try {
+                    const resStatus = await fetch(`${API_BASE}/history?limit=5`);
+                    const resData = await resStatus.json();
+                    
+                    if (resData.success && resData.data) {
+                        const targetRecord = resData.data.find(r => r.id === historyId);
+                        
+                        if (targetRecord && targetRecord.status !== 'pending') {
+                            clearInterval(checkInterval);
+
+                            if (targetRecord.status === 'success') {
+                                showToast(`Đã ${statusText} thành công ${deviceName}!`, "success");
+                                switchElem.checked = isChecked;
+                            } else {
+                                showToast(`Thất bại: ${deviceName} không phản hồi (ESP32 Offline/Mất mạng)!`, "info");
+                                switchElem.checked = !isChecked; // Rollback vị trí cũ nếu lỗi
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error("Lỗi kiểm tra phản hồi:", err);
+                }
+
+                // Nếu quá 4.5s ESP32 ngắt nguồn không trả lời
+                if (checkCount >= 9) {
+                    clearInterval(checkInterval);
+                    switchElem.checked = !isChecked; // Rollback vị trí cũ
+                    showToast(`Thất bại: Mất kết nối đến ${deviceName}!`, "info");
+                }
+            }, 500);
+
+        }, 1000); // 1000ms = ĐÚNG 1 GIÂY XOAY LOADING
+    })
+    .catch(err => {
+        if (itemElem) itemElem.classList.remove("loading");
+        if (switchElem) {
+            switchElem.disabled = false;
+            switchElem.checked = !isChecked;
+        }
+        showToast("Không thể kết nối Backend Server!", "info");
+    });
 }
 
 /* ==========================================================================
-   [JS-SENSOR-TAB] 5. QUẢN LÝ BẢNG DỮ LIỆU CẢM BIẾN (DATA SENSOR)
+   [JS-SENSOR-TAB] 7. QUẢN LÝ BẢNG DATA SENSOR (REST API & REAL-TIME 2S)
    ========================================================================== */
 function applySensorFilter() {
-    const sortVal = document.getElementById("sort-sensor")?.value || "time_desc";
-    const filterVal = document.getElementById("filter-sensor")?.value || "";
-    const keyword = document.getElementById("search-sensor")?.value.toLowerCase().trim() || "";
-
-    sensorFilteredList = mockSensors.filter(item => {
-        // 1. Lọc theo từ khóa tìm kiếm
-        const matchText = item.sensor_name.toLowerCase().includes(keyword) || 
-                          item.value.toLowerCase().includes(keyword) || 
-                          item.time.toLowerCase().includes(keyword);
-        if (!matchText) return false;
-
-        // 2. Lọc theo loại cảm biến (nếu chọn "time" hoặc "Tất cả loại" thì bỏ qua điều kiện rawType)
-        if (filterVal && filterVal !== "time" && item.rawType !== filterVal) {
-            return false;
-        }
-
-        return true;
-    });
-
-    // 3. Sắp xếp thời gian
-    if (sortVal === "time_asc") {
-        sensorFilteredList.sort((a, b) => a.id - b.id);
-    } else {
-        sensorFilteredList.sort((a, b) => b.id - a.id);
-    }
-
     sensorCurrentPage = 1;
-    renderSensorPage();
+    fetchSensorData();
 }
-// Hàm render dữ liệu ra các dòng <tr> bên trong thẻ <tbody> của bảng cảm biến[cite: 5]
-// Hàm render dữ liệu ra các dòng <tr> bên trong thẻ <tbody> của bảng cảm biến
-function renderSensorPage() {
+
+async function fetchSensorData() {
     const tbody = document.getElementById("table-sensor-body");
     if (!tbody) return;
 
-    const totalRecords = sensorFilteredList.length;
-    const totalPages = Math.ceil(totalRecords / sensorPageSize) || 1;
-    if (sensorCurrentPage > totalPages) sensorCurrentPage = totalPages;
+    const sortVal = document.getElementById("sort-sensor")?.value || "time_desc";
+    const filterVal = document.getElementById("filter-sensor")?.value || "";
+    const keyword = document.getElementById("search-sensor")?.value.trim() || "";
+    const pageSize = document.getElementById("pagesize-sensor")?.value || sensorPageSize;
 
-    const startIdx = (sensorCurrentPage - 1) * sensorPageSize;
-    const pageItems = sensorFilteredList.slice(startIdx, startIdx + sensorPageSize);
-
-    tbody.innerHTML = "";
-
-    if (pageItems.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Không tìm thấy bản ghi phù hợp</td></tr>`;
-    } else {
-        pageItems.forEach(item => {
-            tbody.innerHTML += `
-                <tr>
-                    <td>${item.id}</td>
-                    <td>${item.sensor_name}</td>
-                    <td>${item.value}</td>
-                    <td class="copyable-time" title="Click để copy thời gian" onclick="copyTimeText('${item.time}')">${item.time} 📋</td>
-                </tr>
-            `;
-        });
-    }
-
-    // Vẽ thanh phân trang hiển thị 3 nút trang
-    renderPaginationControls("sensor", sensorCurrentPage, totalPages);
-    document.getElementById("page-info-sensor").innerText = `Trang ${sensorCurrentPage} / ${totalPages} (Tổng ${totalRecords} bản ghi)`;
-}
-
-// Thay đổi số lượng dòng hiển thị trên mỗi trang từ ô chọn (5, 10, 20 dòng)[cite: 5]
-function changeSensorPageSize(size) {
-    sensorPageSize = parseInt(size); // Ép kiểu chuỗi sang số nguyên[cite: 5]
-    sensorCurrentPage = 1;           // Đưa về trang đầu tiên[cite: 5]
-    renderSensorPage();              // Vẽ lại bảng[cite: 5]
-}
-
-// Xử lý sự kiện bấm nút lùi trang (<)[cite: 5]
-function prevSensorPage() {
-    if (sensorCurrentPage > 1) {
-        sensorCurrentPage--; // Giảm trang đi 1[cite: 5]
-        renderSensorPage();  // Vẽ lại bảng[cite: 5]
-    }
-}
-
-// Xử lý sự kiện bấm nút tiến trang (>)[cite: 5]
-function nextSensorPage() {
-    const totalPages = Math.ceil(sensorFilteredList.length / sensorPageSize) || 1;
-    if (sensorCurrentPage < totalPages) {
-        sensorCurrentPage++; // Tăng trang lên 1[cite: 5]
-        renderSensorPage();  // Vẽ lại bảng[cite: 5]
-    }
-}
-
-
-/* ==========================================================================
-   [JS-HIST-TAB] 6. QUẢN LÝ BẢNG LỊCH SỬ THAO TÁC (ACTIVE HISTORY)
-   ========================================================================== */
-
-// Hàm lọc và tìm kiếm kết hợp cho bảng lịch sử[cite: 5]
-function applyHistoryFilter() {
-    const sortVal = document.getElementById("sort-history")?.value || "time_desc";
-    const deviceVal = document.getElementById("filter-device")?.value || "";
-    const actionVal = document.getElementById("filter-action")?.value || "";
-    const statusVal = document.getElementById("filter-status")?.value || "";
-    const timeKeyword = document.getElementById("search-history")?.value.toLowerCase().trim() || "";
-
-    historyFilteredList = mockHistory.filter(item => {
-        if (timeKeyword && !item.time.toLowerCase().includes(timeKeyword)) {
-            return false;
-        }
-        if (deviceVal && item.device_name.toLowerCase() !== deviceVal.toLowerCase()) {
-            return false;
-        }
-        if (actionVal && item.action.toLowerCase() !== actionVal.toLowerCase()) {
-            return false;
-        }
-        // Lọc chính xác theo success / fail / pending
-        if (statusVal && item.status.toLowerCase() !== statusVal.toLowerCase()) {
-            return false;
-        }
-
-        return true;
+    const params = new URLSearchParams({
+        page: sensorCurrentPage,
+        limit: pageSize,
+        search: keyword,
+        type: filterVal,
+        sort: sortVal
     });
 
-    if (sortVal === "time_asc") {
-        historyFilteredList.sort((a, b) => a.id - b.id);
-    } else {
-        historyFilteredList.sort((a, b) => b.id - a.id);
-    }
+    try {
+        const res = await fetch(`${API_BASE}/sensors?${params}`);
+        const result = await res.json();
 
-    historyCurrentPage = 1;
-    renderHistoryPage();
+        if (result.success) {
+            const { data, pagination } = result;
+            tbody.innerHTML = "";
+
+            if (!data || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Không tìm thấy bản ghi phù hợp</td></tr>`;
+            } else {
+                data.forEach(item => {
+                    const timeFormatted = item.time ? new Date(item.time).toLocaleString("vi-VN") : "--";
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${item.id}</td>
+                            <td>${item.sensor_name}</td>
+                            <td>${item.value}</td>
+                            <td class="copyable-time" title="Click để copy thời gian" onclick="copyTimeText('${timeFormatted}')">${timeFormatted} 📋</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            renderPaginationControls("sensor", pagination.currentPage, pagination.totalPages);
+            document.getElementById("page-info-sensor").innerText = 
+                `Trang ${pagination.currentPage} / ${pagination.totalPages} (Tổng ${pagination.totalItems} bản ghi)`;
+        }
+    } catch (err) {
+        console.error("Lỗi lấy bảng cảm biến:", err);
+    }
 }
-// Hiển thị dữ liệu lịch sử ra các dòng <tr> của bảng
-function renderHistoryPage() {
+
+function changeSensorPageSize(size) {
+    sensorPageSize = parseInt(size);
+    sensorCurrentPage = 1;
+    fetchSensorData();
+}
+
+function prevSensorPage() {
+    if (sensorCurrentPage > 1) {
+        sensorCurrentPage--;
+        fetchSensorData();
+    }
+}
+
+function nextSensorPage() {
+    sensorCurrentPage++;
+    fetchSensorData();
+}
+
+function goToSensorPage(page) {
+    sensorCurrentPage = page;
+    fetchSensorData();
+}
+
+/* ==========================================================================
+   [JS-HIST-TAB] 8. QUẢN LÝ BẢNG ACTIVE HISTORY (REST API & REAL-TIME 2S)
+   ========================================================================== */
+function applyHistoryFilter() {
+    historyCurrentPage = 1;
+    fetchHistoryData();
+}
+
+async function fetchHistoryData() {
     const tbody = document.getElementById("table-history-body");
     if (!tbody) return;
 
-    const totalRecords = historyFilteredList.length;
-    const totalPages = Math.ceil(totalRecords / historyPageSize) || 1;
-    if (historyCurrentPage > totalPages) historyCurrentPage = totalPages;
+    const pageSize = document.getElementById("pagesize-history")?.value || historyPageSize;
+    const deviceVal = document.getElementById("filter-device")?.value || "";
+    const actionVal = document.getElementById("filter-action")?.value || "";
+    const statusVal = document.getElementById("filter-status")?.value || "";
+    const searchKeyword = document.getElementById("search-history")?.value.trim() || "";
 
-    const startIdx = (historyCurrentPage - 1) * historyPageSize;
-    const pageItems = historyFilteredList.slice(startIdx, startIdx + historyPageSize);
+    const params = new URLSearchParams({
+        page: historyCurrentPage,
+        limit: pageSize,
+        device: deviceVal,
+        action: actionVal,
+        status: statusVal,
+        search: searchKeyword
+    });
 
-    tbody.innerHTML = "";
-    if (pageItems.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Không tìm thấy bản ghi phù hợp</td></tr>`;
-    } else {
-        pageItems.forEach(item => {
-            let statusHtml = "";
-            const st = item.status.toLowerCase();
+    try {
+        const res = await fetch(`${API_BASE}/history?${params}`);
+        const result = await res.json();
 
-            if (st === "pending") {
-                statusHtml = `
-                    <span class="status-badge pending">
-                        <span class="status-spinner"></span> pending
-                    </span>`;
-            } else if (st === "success") {
-                statusHtml = `<span class="status-badge success">success</span>`;
+        if (result.success) {
+            const { data, pagination } = result;
+            tbody.innerHTML = "";
+
+            if (!data || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Không tìm thấy bản ghi phù hợp</td></tr>`;
             } else {
-                statusHtml = `<span class="status-badge fail">fail</span>`;
+                data.forEach(item => {
+                    const timeFormatted = item.time ? new Date(item.time).toLocaleString("vi-VN") : "--";
+                    const st = (item.status || "").toLowerCase().trim();
+                    let statusHtml = "";
+
+                    if (st === "pending") {
+                        statusHtml = `<span class="status-badge pending"><span class="status-spinner"></span> PENDING</span>`;
+                    } else if (st === "fail" || st === "error") {
+                        statusHtml = `<span class="status-badge fail">FAIL</span>`;
+                    } else {
+                        statusHtml = `<span class="status-badge success">SUCCESS</span>`;
+                    }
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${item.id}</td>
+                            <td>${item.device_name}</td>
+                            <td>${item.username || "admin"}</td>
+                            <td>${item.action}</td>
+                            <td>${statusHtml}</td>
+                            <td class="copyable-time" title="Click để copy thời gian" onclick="copyTimeText('${timeFormatted}')">${timeFormatted} 📋</td>
+                        </tr>
+                    `;
+                });
             }
 
-            tbody.innerHTML += `
-                <tr>
-                    <td>${item.id}</td>
-                    <td>${item.device_name}</td>
-                    <td>${item.user || "admin"}</td>
-                    <td>${item.action}</td>
-                    <td>${statusHtml}</td>
-                    <td class="copyable-time" title="Click để copy thời gian" onclick="copyTimeText('${item.time}')">${item.time} 📋</td>
-                </tr>
-            `;
-        });
+            renderPaginationControls("history", pagination.currentPage, pagination.totalPages);
+            document.getElementById("page-info-history").innerText = 
+                `Trang ${pagination.currentPage} / ${pagination.totalPages} (Tổng ${pagination.totalItems} bản ghi)`;
+        }
+    } catch (err) {
+        console.error("Lỗi lấy lịch sử thiết bị:", err);
     }
-
-    // Vẽ thanh phân trang hiển thị 3 nút trang
-    renderPaginationControls("history", historyCurrentPage, totalPages);
-    document.getElementById("page-info-history").innerText = `Trang ${historyCurrentPage} / ${totalPages} (Tổng ${totalRecords} bản ghi)`;
 }
-// Thay đổi số dòng trên 1 trang cho bảng lịch sử[cite: 5]
+
 function changeHistoryPageSize(size) {
     historyPageSize = parseInt(size);
     historyCurrentPage = 1;
-    renderHistoryPage();
+    fetchHistoryData();
 }
 
-// Nút lùi trang cho bảng lịch sử[cite: 5]
 function prevHistoryPage() {
     if (historyCurrentPage > 1) {
         historyCurrentPage--;
-        renderHistoryPage();
+        fetchHistoryData();
     }
 }
 
-// Nút tiến trang cho bảng lịch sử[cite: 5]
 function nextHistoryPage() {
-    const totalPages = Math.ceil(historyFilteredList.length / historyPageSize) || 1;
-    if (historyCurrentPage < totalPages) {
-        historyCurrentPage++;
-        renderHistoryPage();
+    historyCurrentPage++;
+    fetchHistoryData();
+}
+
+function goToHistoryPage(page) {
+    historyCurrentPage = page;
+    fetchHistoryData();
+}
+
+/* ==========================================================================
+   [JS-PROFILE-TAB] 9. TẢI THÔNG TIN TÁC GIẢ WEBSITE TỪ CSDL MYSQL
+   ========================================================================== */
+async function loadProfileData() {
+    try {
+        const res = await fetch(`${API_BASE}/profile`);
+        const result = await res.json();
+
+        if (result.success && result.data) {
+            const p = result.data;
+            if (document.getElementById("pro-name")) document.getElementById("pro-name").innerText = p.name || "--";
+            if (document.getElementById("pro-email")) document.getElementById("pro-email").innerText = p.email || "--";
+            
+            if (document.getElementById("pro-github")) {
+                document.getElementById("pro-github").innerText = p.gitlink || "--";
+                document.getElementById("pro-github").href = p.gitlink || "#";
+            }
+            if (document.getElementById("pro-figma")) {
+                document.getElementById("pro-figma").innerText = p.figmalink || "--";
+                document.getElementById("pro-figma").href = p.figmalink || "#";
+            }
+            if (document.getElementById("pro-postman")) {
+                document.getElementById("pro-postman").innerText = p.postmanlink || "--";
+                document.getElementById("pro-postman").href = p.postmanlink || "#";
+            }
+            if (document.getElementById("pro-report")) {
+                document.getElementById("pro-report").innerText = p.reportlink || "--";
+                document.getElementById("pro-report").href = p.reportlink || "#";
+            }
+        }
+    } catch (err) {
+        console.error("Lỗi lấy thông tin Profile tác giả:", err);
     }
 }
 
-
 /* ==========================================================================
-   [JS-THEME] 7. ĐỒNG BỘ CHẾ ĐỘ SÁNG / TỐI (DARK / LIGHT MODE)
-   ========================================================================== */
-
-// Biến cờ (flag) toàn cục: false là Dark Mode (mặc định), true là Light Mode[cite: 5]
-let isLightMode = false;
-
-function toggleTheme(isChecked) {
-    // Cập nhật trạng thái theo vị trí gạt của checkbox[cite: 5]
-    isLightMode = isChecked;
-
-    // 1. Thêm hoặc gỡ class 'light-mode' ở thẻ <body> để kích hoạt bộ biến màu CSS tương ứng[cite: 5]
-    if (isLightMode) {
-        document.body.classList.add("light-mode");
-        document.getElementById("label-light")?.classList.add("active"); // Làm sáng chữ Light[cite: 5]
-        document.getElementById("label-dark")?.classList.remove("active");
-    } else {
-        document.body.classList.remove("light-mode");
-        document.getElementById("label-light")?.classList.remove("active");
-        document.getElementById("label-dark")?.classList.add("active");  // Làm sáng chữ Dark[cite: 5]
-    }
-
-    // 2. Nếu biểu đồ Chart.js đang mở thì cập nhật lại màu trục tọa độ và chữ[cite: 5]
-    if (sensorChart) {
-        const textColor = isLightMode ? "#0f172a" : "#ffffff";
-        const gridColor = isLightMode ? "#e2e8f0" : "#334155";
-
-        // Cập nhật màu chữ và đường kẻ cho trục hoành X[cite: 5]
-        sensorChart.options.scales.x.ticks.color = textColor;
-        sensorChart.options.scales.x.grid.color = gridColor;
-
-        // Cập nhật màu chữ và đường kẻ cho trục Y bên trái[cite: 5]
-        sensorChart.options.scales.yTempHumid.ticks.color = textColor;
-        sensorChart.options.scales.yTempHumid.title.color = textColor;
-        sensorChart.options.scales.yTempHumid.grid.color = gridColor;
-
-        // Cập nhật màu chữ cho trục Y bên phải[cite: 5]
-        sensorChart.options.scales.yLight.ticks.color = textColor;
-        sensorChart.options.scales.yLight.title.color = textColor;
-
-        // Cập nhật màu chữ phần chú thích (Legend)[cite: 5]
-        sensorChart.options.plugins.legend.labels.color = textColor;
-
-        // Gọi lệnh update('none') để vẽ lại biểu đồ với màu mới mà không làm chạy lại hoạt ảnh[cite: 5]
-        sensorChart.update("none");
-    }
-}
-
-
-/* ==========================================================================
-   [JS-INIT] 8. KHỞI CHẠY TRANG WEB BAN ĐẦU
-   ========================================================================== */
-
-// Lắng nghe sự kiện DOMContentLoaded: Chỉ chạy khi cây DOM của index.html đã sẵn sàng[cite: 5]
-document.addEventListener("DOMContentLoaded", () => {
-    // Tự động mở trang Dashboard đầu tiên và kích hoạt trạng thái active cho menu dòng 1[cite: 5]
-    switchPage("dashboard", document.querySelector(".sidebar nav li.active"));
-});
-/* ==========================================================================
-   [JS-PAGINATION] HÀM VẼ THANH PHÂN TRANG 3 NÚT SỐ VÀ CHUYỂN TRANG TRỰC TIẾP
+   [JS-PAGINATION] 10. HÀM VẼ THANH PHÂN TRANG 3 NÚT SỐ
    ========================================================================== */
 function renderPaginationControls(type, currentPage, totalPages) {
     const container = document.querySelector(`#page-info-${type}`)?.parentElement?.querySelector(".pagination-controls");
     if (!container) return;
 
-    // Tính dải 3 trang xung quanh trang hiện tại
     let startPage = Math.max(1, currentPage - 1);
     let endPage = Math.min(totalPages, startPage + 2);
 
@@ -669,24 +592,52 @@ function renderPaginationControls(type, currentPage, totalPages) {
     let html = `<button class="btn-page" onclick="${prevFunc}">‹ Trước</button>`;
 
     for (let p = startPage; p <= endPage; p++) {
-        const activeClass = p === currentPage ? "active" : "";
-        const goToFunc = type === 'sensor' ? `goToSensorPage(${p})` : `goToHistoryPage(${p})`;
-        html += `<button class="btn-page-num ${activeClass}" onclick="${goToFunc}">${p}</button>`;
+        if (p >= 1 && p <= totalPages) {
+            const activeClass = p === currentPage ? "active" : "";
+            const goToFunc = type === 'sensor' ? `goToSensorPage(${p})` : `goToHistoryPage(${p})`;
+            html += `<button class="btn-page-num ${activeClass}" onclick="${goToFunc}">${p}</button>`;
+        }
     }
 
     html += `<button class="btn-page" onclick="${nextFunc}">Sau ›</button>`;
-
     container.innerHTML = html;
 }
 
-// Chuyển trực tiếp đến trang bấm chọn ở bảng Data Sensor
-function goToSensorPage(page) {
-    sensorCurrentPage = page;
-    renderSensorPage();
+/* ==========================================================================
+   [JS-THEME] 11. ĐỒNG BỘ CHẾ ĐỘ SÁNG / TỐI (DARK / LIGHT MODE)
+   ========================================================================== */
+function toggleTheme(isChecked) {
+    isLightMode = isChecked;
+
+    if (isLightMode) {
+        document.body.classList.add("light-mode");
+        document.getElementById("label-light")?.classList.add("active");
+        document.getElementById("label-dark")?.classList.remove("active");
+    } else {
+        document.body.classList.remove("light-mode");
+        document.getElementById("label-light")?.classList.remove("active");
+        document.getElementById("label-dark")?.classList.add("active");
+    }
+
+    if (sensorChart) {
+        const textColor = isLightMode ? "#0f172a" : "#ffffff";
+        const gridColor = isLightMode ? "#e2e8f0" : "#334155";
+
+        sensorChart.options.scales.x.ticks.color = textColor;
+        sensorChart.options.scales.x.grid.color = gridColor;
+        sensorChart.options.scales.yTempHumid.ticks.color = textColor;
+        sensorChart.options.scales.yTempHumid.title.color = textColor;
+        sensorChart.options.scales.yTempHumid.grid.color = gridColor;
+        sensorChart.options.scales.yLight.ticks.color = textColor;
+        sensorChart.options.scales.yLight.title.color = textColor;
+        sensorChart.options.plugins.legend.labels.color = textColor;
+        sensorChart.update("none");
+    }
 }
 
-// Chuyển trực tiếp đến trang bấm chọn ở bảng Active History
-function goToHistoryPage(page) {
-    historyCurrentPage = page;
-    renderHistoryPage();
-}
+/* ==========================================================================
+   [JS-INIT] 12. KHỞI CHẠY TRANG WEB
+   ========================================================================== */
+document.addEventListener("DOMContentLoaded", () => {
+    switchPage("dashboard", document.querySelector(".sidebar nav li.active"));
+});

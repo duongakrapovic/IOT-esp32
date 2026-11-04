@@ -3,9 +3,9 @@
     <header class="panel-header">
         <div class="header-title">
             <h1>Sensor Overview</h1>
-            <p class="subtitle">Last 2 hours · 5-min intervals</p>
+            <p class="subtitle">Real-time data · 2-sec intervals</p>
 
-            <!-- Nút gạt Light / Dark nằm ngay dưới dòng thời gian -->
+            <!-- Nút gạt Light / Dark -->
             <div class="theme-toggle-box">
                 <span class="theme-text" id="label-light">Light</span>
                 <label class="theme-switch">
@@ -22,14 +22,14 @@
     </div>
 </div>
 
-<!-- Hàng dưới: Cùng 1 hàng (Trái: Điều khiển 3 đèn — Phải: Dàn hàng ngang 3 thông số) -->
+<!-- Hàng dưới: Cột trái (Điều khiển 3 đèn) — Cột phải (3 Thẻ thông số) -->
 <div class="dashboard-bottom-row">
     <!-- Cột trái: Điều khiển 3 đèn -->
     <div class="panel device-panel">
         <h3 class="panel-title">Device Control</h3>
         <div class="device-list">
             
-            <!-- Đèn 1 -->
+            <!-- Đèn 1 (Bỏ checked) -->
             <div class="device-item" id="device-item-1">
                 <span class="device-name">Đèn 1</span>
                 <div class="device-right">
@@ -37,13 +37,13 @@
                     <img src="./css/bulb-off.svg" class="bulb-icon bulb-off" width="28" height="28" alt="Đèn tắt">
                     <img src="./css/bulb-on.svg" class="bulb-icon bulb-on" width="28" height="28" alt="Đèn bật">
                     <label class="switch">
-                        <input type="checkbox" id="device-switch-1" checked onchange="toggleDevice(1, this.checked)">
+                        <input type="checkbox" id="device-switch-1" onchange="toggleDevice(1, this.checked)">
                         <span class="slider"></span>
                     </label>
                 </div>
             </div>
 
-            <!-- Đèn 2 -->
+            <!-- Đèn 2 (Bỏ checked) -->
             <div class="device-item" id="device-item-2">
                 <span class="device-name">Đèn 2</span>
                 <div class="device-right">
@@ -51,13 +51,13 @@
                     <img src="./css/bulb-off.svg" class="bulb-icon bulb-off" width="28" height="28" alt="Đèn tắt">
                     <img src="./css/bulb-on.svg" class="bulb-icon bulb-on" width="28" height="28" alt="Đèn bật">
                     <label class="switch">
-                        <input type="checkbox" id="device-switch-2" checked onchange="toggleDevice(2, this.checked)">
+                        <input type="checkbox" id="device-switch-2" onchange="toggleDevice(2, this.checked)">
                         <span class="slider"></span>
                     </label>
                 </div>
             </div>
 
-            <!-- Đèn 3 -->
+            <!-- Đèn 3 (Bỏ checked) -->
             <div class="device-item" id="device-item-3">
                 <span class="device-name">Đèn 3</span>
                 <div class="device-right">
@@ -65,7 +65,7 @@
                     <img src="./css/bulb-off.svg" class="bulb-icon bulb-off" width="28" height="28" alt="Đèn tắt">
                     <img src="./css/bulb-on.svg" class="bulb-icon bulb-on" width="28" height="28" alt="Đèn bật">
                     <label class="switch">
-                        <input type="checkbox" id="device-switch-3" checked onchange="toggleDevice(3, this.checked)">
+                        <input type="checkbox" id="device-switch-3" onchange="toggleDevice(3, this.checked)">
                         <span class="slider"></span>
                     </label>
                 </div>
@@ -74,21 +74,21 @@
         </div>
     </div>
 
-    <!-- Cột phải: Dàn 1 hàng ngang 3 thông số cảm biến -->
+    <!-- Cột phải: 3 thẻ thông số cảm biến -->
     <div class="panel stats-panel">
         <h3 class="panel-title">Sensor Values</h3>
         <div class="sensor-stats-horizontal">
             <div class="stat-card temp">
                 <h3>TEMPERATURE</h3>
-                <p id="temp-value">30.1°C</p>
+                <p id="temp-value">-- °C</p>
             </div>
             <div class="stat-card humid">
                 <h3>HUMIDITY</h3>
-                <p id="humid-value">61%</p>
+                <p id="humid-value">-- %</p>
             </div>
             <div class="stat-card light">
                 <h3>LIGHT</h3>
-                <p id="light-value">231 Lux</p>
+                <p id="light-value">-- Lux</p>
             </div>
         </div>
     </div>

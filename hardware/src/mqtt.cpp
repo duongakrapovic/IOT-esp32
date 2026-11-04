@@ -22,7 +22,7 @@ static void mqttCallback(
 
 static bool connectWifi();
 static bool connectMqtt();
-static bool publishDeviceStatus(int deviceId);
+static bool publishDeviceStatus(int deviceId, int historyId = 0);
 
 
 // ======================================================
@@ -84,15 +84,12 @@ void initMqtt() {
 
     /*
      * HiveMQ Cloud:
-     * MQTT over TLS
-     * Port 8883
-     *
-     * setInsecure() is used for initial testing.
-     * It encrypts the connection but does not verify
-     * the broker certificate.
+     * MQTT over TLS (Port 8883)
      */
-
     wifiClient.setInsecure();
+
+    // Tăng kích thước bộ nhớ đệm cho gói tin SSL/TLS + JSON
+    mqttClient.setBufferSize(512);
 
     mqttClient.setServer(
         MQTT_SERVER,
@@ -114,7 +111,7 @@ void initMqtt() {
 
 
 // ======================================================
-// MQTT CONNECTION
+// MQTT CONNECTION (CÓ LAST WILL FOR SAFETY)
 // ======================================================
 
 static bool connectMqtt() {
@@ -132,10 +129,18 @@ static bool connectMqtt() {
 
     Serial.print("[MQTT] Connecting...");
 
+    // Cấu hình Last Will & Testament (LWT) để báo sập nguồn an toàn
+    const char* willTopic = MQTT_STATUS_TOPIC;
+    const char* willMessage = "{\"device_status\":\"OFFLINE\"}";
+
     bool connected = mqttClient.connect(
         MQTT_CLIENT_ID,
         MQTT_USERNAME,
-        MQTT_PASSWORD
+        MQTT_PASSWORD,
+        willTopic,
+        1,
+        true,
+        willMessage
     );
 
     if (!connected) {
@@ -356,6 +361,11 @@ static void mqttCallback(char* topic, byte* payload, unsigned int length) {
     const char* action =
         document["action"];
 
+    int historyId =
+        document.containsKey("history_id")
+            ? document["history_id"].as<int>()
+            : 0;
+
     if (action == nullptr) {
 
         Serial.println(
@@ -375,7 +385,13 @@ static void mqttCallback(char* topic, byte* payload, unsigned int length) {
         ", action="
     );
 
-    Serial.println(action);
+    Serial.print(action);
+
+    Serial.print(
+        ", history_id="
+    );
+
+    Serial.println(historyId);
 
 
     // ==================================================
@@ -417,16 +433,17 @@ static void mqttCallback(char* topic, byte* payload, unsigned int length) {
     // ==================================================
 
     publishDeviceStatus(
-        deviceId
+        deviceId,
+        historyId
     );
 }
 
 
 // ======================================================
-// PUBLISH DEVICE STATUS
+// PUBLISH DEVICE STATUS (KÈM HISTORY_ID)
 // ======================================================
 
-static bool publishDeviceStatus(int deviceId) {
+static bool publishDeviceStatus(int deviceId, int historyId) {
 
     int pin;
 
@@ -465,6 +482,10 @@ static bool publishDeviceStatus(int deviceId) {
         actualState
             ? "ON"
             : "OFF";
+
+    if (historyId > 0) {
+        document["history_id"] = historyId;
+    }
 
     char payload[128];
 
