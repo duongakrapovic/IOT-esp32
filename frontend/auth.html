@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập & Đăng ký - IoT System</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* CSS bổ sung riêng cho trang Auth 2 cột */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            width: 100%;
+            gap: 30px;
+            padding: 20px;
+        }
+        .auth-card {
+            width: 420px;
+            background-color: var(--bg-panel);
+            border-radius: 14px;
+            padding: 40px 30px;
+            box-shadow: var(--shadow-card);
+        }
+        .auth-card h2 {
+            color: var(--text-main);
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .form-group label {
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .form-input {
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px 14px;
+            border-radius: 8px;
+            outline: none;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus {
+            border-color: var(--accent-green);
+        }
+        .auth-btn {
+            background-color: var(--btn-primary);
+            color: #ffffff;
+            border: none;
+            padding: 11px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: background-color 0.2s;
+        }
+        .auth-btn:hover {
+            background-color: var(--btn-primary-hover);
+        }
+        .auth-btn.register-btn {
+            background-color: #16a34a;
+        }
+        .auth-btn.register-btn:hover {
+            background-color: #15803d;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        
+        <!-- CỘT TRÁI: ĐĂNG KÝ -->
+        <div class="panel auth-card">
+            <h2>Đăng Ký Tài Khoản</h2>
+            <form id="register-form" class="auth-form" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label>Tài khoản (Username)</label>
+                    <input type="text" id="reg-username" class="form-input" placeholder="Nhập tên tài khoản..." required>
+                </div>
+                <div class="form-group">
+                    <label>Mật khẩu (Password)</label>
+                    <input type="password" id="reg-password" class="form-input" placeholder="Nhập mật khẩu..." required>
+                </div>
+                <button type="submit" class="auth-btn register-btn">Đăng Ký Ngay</button>
+            </form>
+        </div>
+
+        <!-- CỘT PHẢI: ĐĂNG NHẬP -->
+        <div class="panel auth-card">
+            <h2>Đăng Nhập Hệ Thống</h2>
+            <form id="login-form" class="auth-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Tài khoản (Username)</label>
+                    <input type="text" id="login-username" class="form-input" placeholder="Nhập tên tài khoản..." required>
+                </div>
+                <div class="form-group">
+                    <label>Mật khẩu (Password)</label>
+                    <input type="password" id="login-password" class="form-input" placeholder="Nhập mật khẩu..." required>
+                </div>
+                <button type="submit" class="auth-btn">Đăng Nhập</button>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- Khung chứa Toast thông báo -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="js/main.js"></script>
+    <script>
+        // Xử lý sự kiện Submit form Đăng ký (Auto role = user)
+        async function handleRegister(e) {
+            e.preventDefault();
+            const username = document.getElementById('reg-username').value.trim();
+            const password = document.getElementById('reg-password').value.trim();
+
+            try {
+                const res = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password, role: 'user' }) // Cố định role là user
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    showToast(data.message || 'Đăng ký thành công!', 'success');
+                    document.getElementById('register-form').reset();
+                } else {
+                    showToast(data.message || 'Đăng ký thất bại!', 'info');
+                }
+            } catch (err) {
+                showToast('Không thể kết nối Backend Server!', 'info');
+            }
+        }
+
+        // Xử lý sự kiện Submit form Đăng nhập
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+
+            try {
+                const res = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    showToast(`Đăng nhập thành công! Chào ${data.user.username}`, 'success');
+                    
+                    // Chuyển hướng sang trang Dashboard chính sau 1 giây
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                } else {
+                    showToast(data.message || 'Sai tài khoản hoặc mật khẩu!', 'info');
+                }
+            } catch (err) {
+                showToast('Không thể kết nối Backend Server!', 'info');
+            }
+        }
+    </script>
+</body>
+</html>

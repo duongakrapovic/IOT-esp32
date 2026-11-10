@@ -655,53 +655,52 @@ document.addEventListener("DOMContentLoaded", () => {
     switchPage("dashboard", document.querySelector(".sidebar nav li.active"));
 });
 /* ==========================================================================
-   [JS-INIT] HỆ THỐNG ĐĂNG NHẬP TẠM THỜI (DÙNG PROMPT HẶC FORM ẢO)
+   [JS-INIT] HỆ THỐNG KIỂM TRA ĐĂNG NHẬP & CHUYỂN HƯỚNG AUTH
    ========================================================================== */
 document.addEventListener("DOMContentLoaded", () => {
-    // Kiểm tra xem đã có token đăng nhập trong localStorage chưa
-    let token = localStorage.getItem("token");
+   const token = localStorage.getItem("token");
+    const currentPath = window.location.pathname;
 
-    // Nếu chưa có, hiển thị hộp thoại prompt tạm thời để nhập thông tin đăng nhập
-    if (!token) {
-        const usernameInput = prompt("Hệ thống yêu cầu đăng nhập tạm thời.\nNhập Username (ví dụ: admin1):");
-        const passwordInput = prompt("Nhập Password:");
-
-        if (!usernameInput || !passwordInput) {
-            alert("Bạn chưa nhập đủ thông tin! Tải lại trang để đăng nhập.");
-            return;
+    // 1. Nếu đang ở trang auth.html: Nếu đã đăng nhập rồi thì tự động đẩy về index.html
+    if (currentPath.includes("auth.html")) {
+        if (token) {
+            window.location.href = "index.html";
         }
-
-        // Gửi request ngầm lên Backend để lấy Token
-        fetch(`${API_BASE}/auth/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username: usernameInput, password: passwordInput })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                // Lưu token vào localStorage
-                localStorage.setItem("token", data.token);
-                localStorage.setItem("user", JSON.stringify(data.user));
-                alert(`Đăng nhập thành công với tài khoản: ${data.user.username}`);
-                // Tải lại trang để chạy tiếp Dashboard
-                window.location.reload();
-            } else {
-                alert(`Đăng nhập thất bại: ${data.message}`);
-                window.location.reload(); // Reload lại để bắt nhập lại
-            }
-        })
-        .catch(err => {
-            alert("Không thể kết nối đến Backend Server!");
-            console.error(err);
-        });
-
-        return; // Dừng việc load dashboard nếu chưa có token
+        return;
     }
 
-    // Nếu đã có token, chạy trang web bình thường
-    switchPage("dashboard", document.querySelector(".sidebar nav li.active"));
+    // 2. Nếu đang ở trang index.html (file mẹ):
+    // Kiểm tra xem có token chưa, nếu CHƯA CÓ thì bắt buộc đẩy sang auth.html
+    if (!token) {
+        window.location.href = "auth.html";
+        return;
+    }
+
+    // 3. Nếu đã có token, chạy trang web (SPA Dashboard) bình thường
+    if (document.getElementById("app-content")) {
+        switchPage("dashboard", document.querySelector(".sidebar nav li.active"));
+    }
 });
+
+// Hàm Đăng xuất (Xóa token và đưa về trang auth)
+function logout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    showToast("Đã đăng xuất!", "info");
+    setTimeout(() => {
+        window.location.href = "auth.html";
+    }, 500);
+}
+
+// Hàm Đăng xuất nhanh
+function logout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    showToast("Đã đăng xuất!", "info");
+    setTimeout(() => {
+        window.location.href = "auth.html";
+    }, 800);
+}
 
 // Thêm nút Đăng xuất nhanh (Nếu bạn muốn gọi từ console hoặc gán vào sự kiện nào đó)
 function logout() {

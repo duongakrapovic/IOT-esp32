@@ -2,18 +2,24 @@ const mqtt = require('mqtt');
 const db = require('./db');
 require('dotenv').config();
 
+// Cấu hình kết nối MQTT Local trực tiếp (port 1884)
+const brokerUrl = process.env.MQTT_BROKER_URL || 'mqtt://127.0.0.1:1884';
+
 const options = {
-    clientId: process.env.MQTT_CLIENT_ID + '_' + Math.random().toString(16).substr(2, 8),
-    username: process.env.MQTT_USER,
-    password: process.env.MQTT_PASS,
-    rejectUnauthorized: false
+    clientId: 'backendServer_' + Math.random().toString(16).substr(2, 8),
+    // Không cần username/password vì Mosquitto local bật allow_anonymous true
+    clean: true
 };
 
-const client = mqtt.connect(process.env.MQTT_BROKER_URL, options);
+const client = mqtt.connect(brokerUrl, options);
 
 client.on('connect', () => {
-    console.log('[MQTT] Kết nối thành công HiveMQ Cloud');
-    client.subscribe(['iot/sensors/data', 'iot/devices/status']);
+    console.log('[MQTT] Kết nối thành công đến Mosquitto Local Broker:', brokerUrl);
+    client.subscribe(['iot/sensors/data', 'iot/devices/status'], (err) => {
+        if (!err) {
+            console.log('[MQTT] Đã đăng ký thành công các topic: iot/sensors/data, iot/devices/status');
+        }
+    });
 });
 
 client.on('message', async (topic, message) => {
@@ -22,14 +28,12 @@ client.on('message', async (topic, message) => {
 
         // 1. Nhận dữ liệu cảm biến từ ESP32
         if (topic === 'iot/sensors/data') {
-            // CẬP NHẬT TRỰC TIẾP MỐC THỜI GIAN & BẬT CỜ WATCHDOG NGAY LẬP TỨC
             global.lastSensorDataTime = Date.now();
             global.hasReceivedFirstSensorData = true;
 
             const { temperature, humidity, light } = payload;
             console.log(`[MQTT Received Data] T: ${temperature}°C | H: ${humidity}% | L: ${light} Lux`);
 
-            // Ghi dữ liệu vào CSDL MySQL (Bảng data_sensor)
             try {
                 const query = 'INSERT INTO data_sensor (sensor_id, value) VALUES ?';
                 const values = [[1, temperature], [2, humidity], [3, light]];
@@ -39,7 +43,7 @@ client.on('message', async (topic, message) => {
             }
         }
 
-        // 2. Nhận phản hồi trạng thái từ ESP32 & Xử lý sự kiện ngắt nguồn (OFFLINE)
+        // 2. Nhận phản hồi trạng thái từ ESP32
         if (topic === 'iot/devices/status') {
             if (payload.device_status === 'OFFLINE') {
                 console.log('[AN TOÀN ĐIỆN] ESP32 ngắt nguồn/mất mạng! Tự động ngắt tất cả công tắc về OFF.');
@@ -103,7 +107,13 @@ function sendDeviceCommand(deviceId, action, historyId = null) {
         action: action,
         history_id: historyId 
     });
-    client.publish(topic, payload);
+    client.publish(topic, payload, (err) => {
+        if (err) {
+            console.error('[MQTT Publish Error]:', err.message);
+        } else {
+            console.log(`[MQTT Publish Command] Gửi xuống topic ${topic}:`, payload);
+        }
+    });
 }
 
 module.exports = { client, sendDeviceCommand };

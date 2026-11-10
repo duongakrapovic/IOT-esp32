@@ -56,7 +56,7 @@ const requireRole = (requiredRole) => {
 // 1. API AUTHENTICATION
 // ==========================================
 
-// POST /api/auth/register - Đăng ký tài khoản
+// POST /api/auth/register - Đăng ký tài khoản (Lưu password dạng text thuần)
 app.post('/api/auth/register', async (req, res) => {
     try {
         const { username, password, role } = req.body;
@@ -65,11 +65,11 @@ app.post('/api/auth/register', async (req, res) => {
         }
 
         const userRole = role === 'admin' ? 'admin' : 'user';
-        const hashedPassword = await bcrypt.hash(password, 10);
         
+        // Lưu trực tiếp chuỗi password thuần không qua bcrypt.hash
         await db.query(
             'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
-            [username, hashedPassword, userRole]
+            [username, password, userRole]
         );
 
         res.json({ success: true, message: `Đăng ký tài khoản [${username}] thành công với vai trò [${userRole}]!` });
@@ -81,7 +81,7 @@ app.post('/api/auth/register', async (req, res) => {
     }
 });
 
-// POST /api/auth/login - Đăng nhập
+// POST /api/auth/login - Đăng nhập (So sánh chuỗi text thuần)
 app.post('/api/auth/login', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -92,8 +92,9 @@ app.post('/api/auth/login', async (req, res) => {
         }
 
         const user = rows[0];
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
+        
+        // So sánh trực tiếp mật khẩu nhập vào với password trong CSDL
+        if (password !== user.password) {
             return res.status(401).json({ success: false, message: 'Tài khoản hoặc mật khẩu không đúng' });
         }
 
@@ -348,3 +349,31 @@ setInterval(async () => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`[Express Server] Running at http://localhost:${PORT}`));
+
+// ==========================================
+// BẮT SỰ KIỆN TẮT SERVER AN TOÀN (GRACEFUL SHUTDOWN)
+// ==========================================
+process.on('SIGINT', async () => {
+    console.log('\n[AN TOÀN HỆ THỐNG] Phát hiện lệnh tắt server (Ctrl + C)! Đang gửi lệnh tắt toàn bộ đèn xuống phần cứng...');
+    
+    try {
+        sendDeviceCommand(1, 'OFF');
+        sendDeviceCommand(2, 'OFF');
+        sendDeviceCommand(3, 'OFF');
+        
+        await db.query(
+            'INSERT INTO active_history (device_id, action, status, user_id) VALUES ?',
+            [
+                [[1, 'tắt', 'success', 1], [2, 'tắt', 'success', 1], [3, 'tắt', 'success', 1]]
+            ]
+        );
+        console.log('[AN TOÀN HỆ THỐNG] Đã phát lệnh tắt thành công xuống MQTT broker.');
+    } catch (err) {
+        console.error('[Lỗi ngắt khẩn cấp]:', err.message);
+    }
+
+    setTimeout(() => {
+        console.log('[SERVER CLOSED] Server đã dừng hoàn toàn.');
+        process.exit(0);
+    }, 600);
+});
