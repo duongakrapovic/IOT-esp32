@@ -22,18 +22,25 @@ client.on('message', async (topic, message) => {
 
         // 1. Nhận dữ liệu cảm biến từ ESP32
         if (topic === 'iot/sensors/data') {
-            // Cập nhật mốc thời gian nhận dữ liệu cảm biến thực tế từ ESP32
-            global.lastSensorDataTime = Date.now(); 
+            // CẬP NHẬT TRỰC TIẾP MỐC THỜI GIAN & BẬT CỜ WATCHDOG NGAY LẬP TỨC
+            global.lastSensorDataTime = Date.now();
+            global.hasReceivedFirstSensorData = true;
 
             const { temperature, humidity, light } = payload;
-            const query = 'INSERT INTO data_sensor (sensor_id, value) VALUES ?';
-            const values = [[1, temperature], [2, humidity], [3, light]];
-            await db.query(query, [values]);
+            console.log(`[MQTT Received Data] T: ${temperature}°C | H: ${humidity}% | L: ${light} Lux`);
+
+            // Ghi dữ liệu vào CSDL MySQL (Bảng data_sensor)
+            try {
+                const query = 'INSERT INTO data_sensor (sensor_id, value) VALUES ?';
+                const values = [[1, temperature], [2, humidity], [3, light]];
+                await db.query(query, [values]);
+            } catch (dbErr) {
+                console.error('[MySQL Sensor Insert Error]:', dbErr.message);
+            }
         }
 
         // 2. Nhận phản hồi trạng thái từ ESP32 & Xử lý sự kiện ngắt nguồn (OFFLINE)
         if (topic === 'iot/devices/status') {
-            // Trường hợp ESP32 sập nguồn / đứt mạng đột ngột (HiveMQ kích hoạt Last Will)
             if (payload.device_status === 'OFFLINE') {
                 console.log('[AN TOÀN ĐIỆN] ESP32 ngắt nguồn/mất mạng! Tự động ngắt tất cả công tắc về OFF.');
                 const safetyLogs = [
@@ -48,7 +55,6 @@ client.on('message', async (topic, message) => {
                 return;
             }
 
-            // Trường hợp phản hồi bật/tắt thiết bị từ ESP32
             const { device_id, action, status, history_id } = payload;
             
             const rawAct = String(action || status || '').toUpperCase().trim();
@@ -56,7 +62,6 @@ client.on('message', async (topic, message) => {
             const actText = isOff ? 'tắt' : 'bật';
             const stText = (status && String(status).toLowerCase() === 'fail') ? 'fail' : 'success';
 
-            // XỬ LÝ TỨC THỜI: Cập nhật CSDL ngay khi nhận tin nhắn MQTT từ ESP32
             try {
                 if (history_id) {
                     await db.query(
@@ -87,7 +92,7 @@ client.on('message', async (topic, message) => {
             }
         }
     } catch (error) {
-        console.error('[MQTT Error] Lỗi xử lý:', error.message);
+        console.error('[MQTT Error] Lỗi xử lý gói tin:', error.message);
     }
 });
 

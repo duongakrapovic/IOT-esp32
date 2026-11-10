@@ -8,7 +8,7 @@
    [JS-CHART]      : Cấu hình biểu đồ Chart.js & Realtime Polling Dashboard
    [JS-DEVICE]     : Hàm gửi lệnh POST bật/tắt thiết bị & Chờ phản hồi
    [JS-SENSOR-TAB] : Lấy dữ liệu, Lọc và Phân trang Bảng Data Sensor (Real-time 2s)
-   [JS-HIST-TAB]   : Lấy dữ liệu và Phân trang Bảng Active History từ MySQL
+   [JS-HIST-TAB]   : Lấy dữ liệu và Phân trang Bảng Active History từ MySQL (Users)
    [JS-PROFILE-TAB]: Tải thông tin Tác giả website từ bảng Profile
    [JS-PAGINATION] : HÀM VẼ THANH PHÂN TRANG 3 NÚT SỐ VÀ CHUYỂN TRANG TRỰC TIẾP
    [JS-THEME]      : Đồng bộ chế độ Sáng / Tối (Dark / Light) cho web & Biểu đồ
@@ -31,6 +31,15 @@ let sensorPageSize = 10;
 let historyCurrentPage = 1;
 let historyPageSize = 10;
 
+// Hàm tạo Headers chứa JWT Token tự động từ localStorage
+function getAuthHeaders() {
+    const token = localStorage.getItem("token");
+    return {
+        "Content-Type": "application/json",
+        "Authorization": token ? `Bearer ${token}` : ""
+    };
+}
+
 /* ==========================================================================
    [JS-TOAST] 2. THÔNG BÁO POPUP (TOAST) & HÀM SAO CHÉP THỜI GIAN
    ========================================================================== */
@@ -38,7 +47,6 @@ function showToast(message, type = "success") {
     const container = document.getElementById("toast-container");
     if (!container) return;
 
-    // Xóa ngay thông báo cũ để không bị đè chữ
     container.innerHTML = "";
 
     const toast = document.createElement("div");
@@ -48,7 +56,6 @@ function showToast(message, type = "success") {
 
     container.appendChild(toast);
 
-    // Hiển thị ngay lập tức và tự biến mất sau 3.0 giây để người dùng kịp đọc
     setTimeout(() => {
         toast.remove();
     }, 3000);
@@ -69,7 +76,6 @@ function switchPage(pageName, element) {
     document.querySelectorAll(".sidebar nav li").forEach(li => li.classList.remove("active"));
     if (element) element.classList.add("active");
 
-    // Xóa bộ đếm cũ khi đổi tab
     if (sensorPollingInterval) {
         clearInterval(sensorPollingInterval);
         sensorPollingInterval = null;
@@ -104,11 +110,13 @@ function switchPage(pageName, element) {
 }
 
 /* ==========================================================================
-   [JS-DEVICE-SYNC] 4. ĐỒNG BỘ TRẠNG THÁI CÔNG TẮC TỪ CSDL (Định nghĩa trước)
+   [JS-DEVICE-SYNC] 4. ĐỒNG BỘ TRẠNG THÁI CÔNG TẮC TỪ CSDL
    ========================================================================== */
 async function syncDeviceStatus() {
     try {
-        const res = await fetch(`${API_BASE}/devices/status`);
+        const res = await fetch(`${API_BASE}/devices/status`, {
+            headers: getAuthHeaders()
+        });
         const result = await res.json();
         if (result.success && result.data) {
             result.data.forEach(item => {
@@ -222,7 +230,9 @@ function initDashboard() {
 
 async function loadDashboardData() {
     try {
-        const res = await fetch(`${API_BASE}/sensors/latest`);
+        const res = await fetch(`${API_BASE}/sensors/latest`, {
+            headers: getAuthHeaders()
+        });
         const result = await res.json();
 
         if (result.success && result.data) {
@@ -272,7 +282,7 @@ function updateStatDisplay(t, h, l) {
 }
 
 /* ==========================================================================
-   [JS-DEVICE] 6. ĐIỀU KHIỂN BẬT / TẮT ĐÈN (DELAY XOAY 1S & PHẢN HỒI NGUYÊN BẢN)
+   [JS-DEVICE] 6. ĐIỀU KHIỂN BẬT / TẮT ĐÈN (TRUYỀN TOKEN AUTH)
    ========================================================================== */
 function toggleDevice(deviceId, isChecked) {
     const itemElem = document.getElementById(`device-item-${deviceId}`);
@@ -281,20 +291,18 @@ function toggleDevice(deviceId, isChecked) {
     const action = isChecked ? "ON" : "OFF";
     const statusText = isChecked ? "bật" : "tắt";
 
-    // 1. KÍCH HOẠT HIỆU ỨNG XOAY LOADING VÀ KHÓA CÔNG TẮC ĐÚNG 1 GIÂY
     if (itemElem) itemElem.classList.add("loading");
     if (switchElem) switchElem.disabled = true;
 
-    // Gửi lệnh điều khiển xuống Backend
     fetch(`${API_BASE}/control`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ device_id: deviceId, action: action })
     })
     .then(res => res.json())
     .then(data => {
         if (!data.success) {
-            showToast(`Lỗi gửi lệnh đến ${deviceName}`, "info");
+            showToast(data.message || `Lỗi gửi lệnh đến ${deviceName}`, "info");
             if (itemElem) itemElem.classList.remove("loading");
             if (switchElem) {
                 switchElem.disabled = false;
@@ -304,21 +312,19 @@ function toggleDevice(deviceId, isChecked) {
         }
 
         const historyId = data.history_id;
-        
-        // Hiện thông báo tức khắc
         showToast(`Đang gửi lệnh ${statusText} đến ${deviceName}...`, "info");
 
-        // Giữ hiệu ứng xoay loading đúng 1 giây cho mượt mắt
         setTimeout(() => {
             if (itemElem) itemElem.classList.remove("loading");
             if (switchElem) switchElem.disabled = false;
 
-            // Kiểm tra phản hồi ngầm từ CSDL
             let checkCount = 0;
             const checkInterval = setInterval(async () => {
                 checkCount++;
                 try {
-                    const resStatus = await fetch(`${API_BASE}/history?limit=5`);
+                    const resStatus = await fetch(`${API_BASE}/history?limit=5`, {
+                        headers: getAuthHeaders()
+                    });
                     const resData = await resStatus.json();
                     
                     if (resData.success && resData.data) {
@@ -331,8 +337,8 @@ function toggleDevice(deviceId, isChecked) {
                                 showToast(`Đã ${statusText} thành công ${deviceName}!`, "success");
                                 switchElem.checked = isChecked;
                             } else {
-                                showToast(`Thất bại: ${deviceName} không phản hồi (ESP32 Offline/Mất mạng)!`, "info");
-                                switchElem.checked = !isChecked; // Rollback vị trí cũ nếu lỗi
+                                showToast(`Thất bại: ${deviceName} không phản hồi!`, "info");
+                                switchElem.checked = !isChecked;
                             }
                         }
                     }
@@ -340,15 +346,14 @@ function toggleDevice(deviceId, isChecked) {
                     console.error("Lỗi kiểm tra phản hồi:", err);
                 }
 
-                // Nếu quá 4.5s ESP32 ngắt nguồn không trả lời
                 if (checkCount >= 9) {
                     clearInterval(checkInterval);
-                    switchElem.checked = !isChecked; // Rollback vị trí cũ
+                    switchElem.checked = !isChecked;
                     showToast(`Thất bại: Mất kết nối đến ${deviceName}!`, "info");
                 }
             }, 500);
 
-        }, 1000); // 1000ms = ĐÚNG 1 GIÂY XOAY LOADING
+        }, 1000);
     })
     .catch(err => {
         if (itemElem) itemElem.classList.remove("loading");
@@ -386,7 +391,9 @@ async function fetchSensorData() {
     });
 
     try {
-        const res = await fetch(`${API_BASE}/sensors?${params}`);
+        const res = await fetch(`${API_BASE}/sensors?${params}`, {
+            headers: getAuthHeaders()
+        });
         const result = await res.json();
 
         if (result.success) {
@@ -442,7 +449,7 @@ function goToSensorPage(page) {
 }
 
 /* ==========================================================================
-   [JS-HIST-TAB] 8. QUẢN LÝ BẢNG ACTIVE HISTORY (REST API & REAL-TIME 2S)
+   [JS-HIST-TAB] 8. QUẢN LÝ BẢNG ACTIVE HISTORY (HIỂN THỊ USER TỪ USERS TABLE)
    ========================================================================== */
 function applyHistoryFilter() {
     historyCurrentPage = 1;
@@ -469,7 +476,9 @@ async function fetchHistoryData() {
     });
 
     try {
-        const res = await fetch(`${API_BASE}/history?${params}`);
+        const res = await fetch(`${API_BASE}/history?${params}`, {
+            headers: getAuthHeaders()
+        });
         const result = await res.json();
 
         if (result.success) {
@@ -492,11 +501,13 @@ async function fetchHistoryData() {
                         statusHtml = `<span class="status-badge success">SUCCESS</span>`;
                     }
 
+                    const displayUser = item.username || item.full_name || "admin";
+
                     tbody.innerHTML += `
                         <tr>
                             <td>${item.id}</td>
                             <td>${item.device_name}</td>
-                            <td>${item.username || "admin"}</td>
+                            <td>${displayUser}</td>
                             <td>${item.action}</td>
                             <td>${statusHtml}</td>
                             <td class="copyable-time" title="Click để copy thời gian" onclick="copyTimeText('${timeFormatted}')">${timeFormatted} 📋</td>
@@ -538,11 +549,13 @@ function goToHistoryPage(page) {
 }
 
 /* ==========================================================================
-   [JS-PROFILE-TAB] 9. TẢI THÔNG TIN TÁC GIẢ WEBSITE TỪ CSDL MYSQL
+   [JS-PROFILE-TAB] 9. TẢI THÔNG TIN TÁC GIẢ WEBSITE TỪ CSDL MYSQL (PROFILE)
    ========================================================================== */
 async function loadProfileData() {
     try {
-        const res = await fetch(`${API_BASE}/profile`);
+        const res = await fetch(`${API_BASE}/profile`, {
+            headers: getAuthHeaders()
+        });
         const result = await res.json();
 
         if (result.success && result.data) {
@@ -641,3 +654,59 @@ function toggleTheme(isChecked) {
 document.addEventListener("DOMContentLoaded", () => {
     switchPage("dashboard", document.querySelector(".sidebar nav li.active"));
 });
+/* ==========================================================================
+   [JS-INIT] HỆ THỐNG ĐĂNG NHẬP TẠM THỜI (DÙNG PROMPT HẶC FORM ẢO)
+   ========================================================================== */
+document.addEventListener("DOMContentLoaded", () => {
+    // Kiểm tra xem đã có token đăng nhập trong localStorage chưa
+    let token = localStorage.getItem("token");
+
+    // Nếu chưa có, hiển thị hộp thoại prompt tạm thời để nhập thông tin đăng nhập
+    if (!token) {
+        const usernameInput = prompt("Hệ thống yêu cầu đăng nhập tạm thời.\nNhập Username (ví dụ: admin1):");
+        const passwordInput = prompt("Nhập Password:");
+
+        if (!usernameInput || !passwordInput) {
+            alert("Bạn chưa nhập đủ thông tin! Tải lại trang để đăng nhập.");
+            return;
+        }
+
+        // Gửi request ngầm lên Backend để lấy Token
+        fetch(`${API_BASE}/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: usernameInput, password: passwordInput })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Lưu token vào localStorage
+                localStorage.setItem("token", data.token);
+                localStorage.setItem("user", JSON.stringify(data.user));
+                alert(`Đăng nhập thành công với tài khoản: ${data.user.username}`);
+                // Tải lại trang để chạy tiếp Dashboard
+                window.location.reload();
+            } else {
+                alert(`Đăng nhập thất bại: ${data.message}`);
+                window.location.reload(); // Reload lại để bắt nhập lại
+            }
+        })
+        .catch(err => {
+            alert("Không thể kết nối đến Backend Server!");
+            console.error(err);
+        });
+
+        return; // Dừng việc load dashboard nếu chưa có token
+    }
+
+    // Nếu đã có token, chạy trang web bình thường
+    switchPage("dashboard", document.querySelector(".sidebar nav li.active"));
+});
+
+// Thêm nút Đăng xuất nhanh (Nếu bạn muốn gọi từ console hoặc gán vào sự kiện nào đó)
+function logout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    alert("Đã đăng xuất!");
+    window.location.reload();
+}

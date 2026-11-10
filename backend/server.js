@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const db = require('./db');
 const { sendDeviceCommand } = require('./mqtt');
 require('dotenv').config();
@@ -8,22 +10,120 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Khởi tạo biến toàn cục theo dõi mốc thời gian nhận cảm biến thực tế từ ESP32
+const JWT_SECRET = process.env.JWT_SECRET || 'IOT_SECRET_KEY_2026';
+
+// Map toàn cục lưu các timer đếm ngược 4s theo history_id để tránh lag
+global.pendingTimers = global.pendingTimers || {};
 global.lastSensorDataTime = Date.now();
+global.hasReceivedFirstSensorData = false; // Cờ đánh dấu đã nhận bản tin cảm biến đầu tiên hay chưa
 
 // ==========================================
-// 1. API CẢM BIẾN (DASHBOARD & DATA SENSOR)
+// MIDDLEWARE XÁC THỰC & PHÂN QUYỀN (RBAC)
 // ==========================================
 
-// Lấy 30 bản ghi cảm biến mới nhất cho Dashboard Chart & Cards
-app.get('/api/sensors/latest', async (req, res) => {
+// 1. Middleware kiểm tra Token hợp lệ
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Lấy chuỗi Token từ "Bearer <token>"
+    
+    if (!token) {
+        return res.status(401).json({ success: false, message: 'Yêu cầu đăng nhập (Thiếu Bearer Token)' });
+    }
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) {
+            return res.status(403).json({ success: false, message: 'Token không hợp lệ hoặc đã hết hạn' });
+        }
+        req.user = user; // Gán payload { id, username, role } vào req
+        next();
+    });
+};
+
+// 2. Middleware kiểm tra Vai trò (Role-Based Access Control)
+const requireRole = (requiredRole) => {
+    return (req, res, next) => {
+        if (!req.user || req.user.role !== requiredRole) {
+            return res.status(403).json({ 
+                success: false, 
+                message: `Quyền truy cập bị từ chối. API này yêu cầu vai trò [${requiredRole}]!` 
+            });
+        }
+        next();
+    };
+};
+
+// ==========================================
+// 1. API AUTHENTICATION
+// ==========================================
+
+// POST /api/auth/register - Đăng ký tài khoản
+app.post('/api/auth/register', async (req, res) => {
+    try {
+        const { username, password, role } = req.body;
+        if (!username || !password) {
+            return res.status(400).json({ success: false, message: 'Vui lòng nhập username và password' });
+        }
+
+        const userRole = role === 'admin' ? 'admin' : 'user';
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        await db.query(
+            'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
+            [username, hashedPassword, userRole]
+        );
+
+        res.json({ success: true, message: `Đăng ký tài khoản [${username}] thành công với vai trò [${userRole}]!` });
+    } catch (err) {
+        if (err.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({ success: false, message: 'Tên đăng nhập đã tồn tại' });
+        }
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// POST /api/auth/login - Đăng nhập
+app.post('/api/auth/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const [rows] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
+        
+        if (rows.length === 0) {
+            return res.status(401).json({ success: false, message: 'Tài khoản hoặc mật khẩu không đúng' });
+        }
+
+        const user = rows[0];
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ success: false, message: 'Tài khoản hoặc mật khẩu không đúng' });
+        }
+
+        const token = jwt.sign(
+            { id: user.id, username: user.username, role: user.role },
+            JWT_SECRET,
+            { expiresIn: '1d' }
+        );
+
+        res.json({
+            success: true,
+            token,
+            user: { id: user.id, username: user.username, role: user.role }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ==========================================
+// 2. API CẢM BIẾN (YÊU CẦU ĐĂNG NHẬP)
+// ==========================================
+
+app.get('/api/sensors/latest', authenticateToken, async (req, res) => {
     try {
         const [rows] = await db.query(`
             SELECT ds.id, COALESCE(s.name, 'Cảm biến') AS sensor_name, ds.sensor_id, ds.value, ds.time 
             FROM data_sensor ds
             LEFT JOIN sensor s ON ds.sensor_id = s.id
-            ORDER BY ds.id DESC 
-            LIMIT 30
+            ORDER BY ds.id DESC LIMIT 30
         `);
         res.json({ success: true, data: rows });
     } catch (err) {
@@ -31,8 +131,7 @@ app.get('/api/sensors/latest', async (req, res) => {
     }
 });
 
-// Lấy danh sách cảm biến (Phân trang, Tìm kiếm, Lọc, Sắp xếp)
-app.get('/api/sensors', async (req, res) => {
+app.get('/api/sensors', authenticateToken, async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
@@ -80,20 +179,17 @@ app.get('/api/sensors', async (req, res) => {
 });
 
 // ==========================================
-// 2. API ĐIỀU KHIỂN & LỊCH SỬ THIẾT BỊ (USER)
+// 3. API ĐIỀU KHIỂN & LỊCH SỬ (PHÂN QUYỀN STRICTION)
 // ==========================================
 
-// Lấy trạng thái đèn thành công gần nhất để phục hồi công tắc khi F5
-app.get('/api/devices/status', async (req, res) => {
+app.get('/api/devices/status', authenticateToken, async (req, res) => {
     try {
         const [rows] = await db.query(`
             SELECT ah.device_id, ah.action, ah.status, ah.time
             FROM active_history ah
             INNER JOIN (
                 SELECT device_id, MAX(id) as max_id
-                FROM active_history
-                WHERE status = 'success'
-                GROUP BY device_id
+                FROM active_history WHERE status = 'success' GROUP BY device_id
             ) latest ON ah.device_id = latest.device_id AND ah.id = latest.max_id
         `);
         res.json({ success: true, data: rows });
@@ -102,8 +198,8 @@ app.get('/api/devices/status', async (req, res) => {
     }
 });
 
-// Ghi PENDING -> Phát MQTT -> Tự động chuyển FAIL sau 4s nếu timeout
-app.post('/api/control', async (req, res) => {
+// API ĐIỀU KHIỂN: YÊU CẦU TOKEN + VAI TRÒ ADMIN
+app.post('/api/control', authenticateToken, requireRole('admin'), async (req, res) => {
     const { device_id, action } = req.body;
 
     if (!device_id || !['ON', 'OFF'].includes(action)) {
@@ -111,18 +207,18 @@ app.post('/api/control', async (req, res) => {
     }
 
     const actionText = action === 'ON' ? 'bật' : 'tắt';
+    const currentUserId = req.user.id;
 
     try {
         const [result] = await db.query(
-            'INSERT INTO active_history (device_id, action, status, user_id) VALUES (?, ?, ?, 1)',
-            [Number(device_id), actionText, 'pending']
+            'INSERT INTO active_history (device_id, action, status, user_id) VALUES (?, ?, ?, ?)',
+            [Number(device_id), actionText, 'pending', currentUserId]
         );
         const historyId = result.insertId;
 
         sendDeviceCommand(device_id, action, historyId);
 
-        // Timeout 4 giây: Nếu ESP32 không phản hồi, tự đánh dấu FAIL
-        setTimeout(async () => {
+        global.pendingTimers[historyId] = setTimeout(async () => {
             try {
                 const [rows] = await db.query('SELECT status FROM active_history WHERE id = ?', [historyId]);
                 if (rows.length > 0 && rows[0].status === 'pending') {
@@ -131,17 +227,18 @@ app.post('/api/control', async (req, res) => {
                 }
             } catch (tErr) {
                 console.error('[Timeout Error]:', tErr.message);
+            } finally {
+                delete global.pendingTimers[historyId];
             }
         }, 4000);
 
-        res.json({ success: true, history_id: historyId, message: `Đang xử lý lệnh ${action}...` });
+        res.json({ success: true, history_id: historyId, message: `[Admin: ${req.user.username}] Đang xử lý lệnh ${action}...` });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// Truy vấn danh sách Lịch sử điều khiển kết hợp với bảng users
-app.get('/api/history', async (req, res) => {
+app.get('/api/history', authenticateToken, async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
@@ -183,14 +280,13 @@ app.get('/api/history', async (req, res) => {
 
         const [rows] = await db.query(
             `SELECT ah.id, COALESCE(d.name, CONCAT('Đèn ', ah.device_id)) AS device_name, 
-                    COALESCE(u.username, 'admin') AS username,
+                    COALESCE(u.username, 'Hệ thống') AS username,
                     ah.device_id, ah.action, ah.status, ah.time 
              FROM active_history ah
              LEFT JOIN devices d ON ah.device_id = d.id
              LEFT JOIN users u ON ah.user_id = u.id
              ${whereClause}
-             ORDER BY ah.id DESC
-             LIMIT ? OFFSET ?`,
+             ORDER BY ah.id DESC LIMIT ? OFFSET ?`,
             [...queryParams, limit, offset]
         );
 
@@ -204,7 +300,10 @@ app.get('/api/history', async (req, res) => {
     }
 });
 
-// API Profile Tác giả
+// ==========================================
+// 4. API PROFILE & WATCHDOG AN TOÀN ĐIỆN
+// ==========================================
+
 app.get('/api/profile', async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM profile WHERE id = 1 LIMIT 1');
@@ -215,29 +314,31 @@ app.get('/api/profile', async (req, res) => {
     }
 });
 
-// Giám sát Watchdog (Tự động chuyển công tắc Web về OFF nếu sập nguồn ESP32 > 20s)
+// Watchdog: Chỉ kiểm tra SAU KHI đã nhận được ít nhất 1 gói tin cảm biến đầu tiên
 setInterval(async () => {
-    const timeDiff = Date.now() - (global.lastSensorDataTime || Date.now());
+    if (!global.hasReceivedFirstSensorData) return;
+
+    const timeDiff = Date.now() - global.lastSensorDataTime;
     if (timeDiff > 20000) {
         try {
             const [rows] = await db.query(`
                 SELECT ah.device_id, ah.action 
                 FROM active_history ah
                 INNER JOIN (
-                    SELECT device_id, MAX(id) as max_id 
-                    FROM active_history 
-                    GROUP BY device_id
+                    SELECT device_id, MAX(id) as max_id FROM active_history GROUP BY device_id
                 ) latest ON ah.device_id = latest.device_id AND ah.id = latest.max_id
                 WHERE ah.action IN ('bật', 'ON') AND ah.status = 'success'
             `);
 
             if (rows.length > 0) {
-                console.log('[WATCHDOG] ESP32 không gửi cảm biến > 20s. Tự động chèn bản ghi OFF an toàn điện.');
+                console.log('[WATCHDOG] ESP32 mất kết nối > 20s. Tự động chuyển công tắc sang OFF.');
                 const autoOffRecords = rows.map(r => [r.device_id, 'tắt', 'success', 1]);
                 await db.query(
                     'INSERT INTO active_history (device_id, action, status, user_id) VALUES ?',
                     [autoOffRecords]
                 );
+                // Reset cờ để không lặp lại log cho đến khi ESP32 gửi lại dữ liệu
+                global.hasReceivedFirstSensorData = false;
             }
         } catch (err) {
             console.error('[Watchdog Error]:', err.message);
